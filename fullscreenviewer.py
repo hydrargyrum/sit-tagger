@@ -110,6 +110,7 @@ class ImageViewer(QMainWindow):
 		if self.isHidden():
 			#~ self.setWindowState(self.windowState() | Qt.WindowMaximized)
 			#~ self.show()
+			self.fullscreenAction.setChecked(False)
 			self.fullscreenAction.setChecked(True)
 			#~ self.showMaximized()
 		else:
