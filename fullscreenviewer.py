@@ -35,26 +35,23 @@ class ImageViewer(QMainWindow):
 	def _init_widgets(self):
 		self.labimg = QLabel()
 		self.labimg.setMouseTracking(True)
-		
-		self.scrollview = ImageViewerCenter(self, self.labimg)
-		self.scrollview.installEventFilter(self) ### !
-		self.setCentralWidget(self.scrollview)
-		
+
 		#self.toolbar = AutoHideToolBar()
 		self.toolbar = QToolBar()
 		self.addToolBar(self.toolbar)
-		self.connect(self.toolbar.addAction('Z 1:1'), SIGNAL('triggered()'), lambda: self.scrollview.setZoomFactor(1.))
-		self.connect(self.toolbar.addAction('Z Fit'), SIGNAL('triggered()'), lambda: self.scrollview.setZoom(ZOOM_FITALL))
-		self.connect(self.toolbar.addAction('Z FitExp'), SIGNAL('triggered()'), lambda: self.scrollview.setZoom(ZOOM_FITCUT))
-		self.connect(self.toolbar.addAction('Z x1.5'), SIGNAL('triggered()'), lambda: self.scrollview.mulZoomFactor(1.5))
-		self.connect(self.toolbar.addAction('Z /1.5'), SIGNAL('triggered()'), lambda: self.scrollview.mulZoomFactor(1/1.5))
+		self.toolbar.hide()
+		self.toolbar.addAction('Z 1:1').triggered.connect(self.doNormalZoom)
+		self.toolbar.addAction('Z Fit').triggered.connect(self.doFitAllZoom)
+		self.toolbar.addAction('Z FitExp').triggered.connect(self.doFitCutZoom)
+		self.toolbar.addAction('Z x1.5').triggered.connect(self.zoom)
+		self.toolbar.addAction('Z /1.5').triggered.connect(self.unzoom)
 
-		self.connect(self.toolbar.addAction('Copy tags'), SIGNAL('triggered()'), self.copyPreviousTags)
+		self.toolbar.addAction('Copy tags').triggered.connect(self.copyPreviousTags)
 
 		self.fullscreenAction = self.toolbar.addAction('Fullscreen')
 		self.fullscreenAction.setCheckable(True)
-		self.connect(self.fullscreenAction, SIGNAL('toggled(bool)'), self.setFullscreen)
-		
+		self.fullscreenAction.toggled.connect(self.setFullscreen)
+
 		self.navPrevAction = act = self.toolbar.addAction('Prev')
 		act.setShortcut(QKeySequence(Qt.Key_Backspace))
 		act.triggered.connect(self.prevFile)
@@ -62,14 +59,24 @@ class ImageViewer(QMainWindow):
 		act.setShortcut(QKeySequence(Qt.Key_Space))
 		act.triggered.connect(self.nextFile)
 		#~ act.setShortcutContext(Qt.WidgetWithChildrenShortcut)
-		
+
 		self.tageditor = TagEditor(self.tagger)
 		self.docktagger = AutoHideDock()
 		self.docktagger.setWidget(self.tageditor)
 		self.addDockWidget(Qt.LeftDockWidgetArea, self.docktagger)
-		
+		self.docktagger.hide()
+
+		self.scrollview = ImageViewerCenter(self.labimg)
+		self.scrollview.installEventFilter(self) ### !
+		self.setCentralWidget(self.scrollview)
+
+		self.scrollview.topZoneEntered.connect(self.toolbar.show)
+		self.scrollview.topZoneLeft.connect(self.toolbar.hide)
+		self.scrollview.leftZoneEntered.connect(self.docktagger.show)
+		self.scrollview.leftZoneLeft.connect(self.docktagger.hide)
+
 		#~ self.setWindowState(self.windowState() | Qt.WindowMaximized)
-		
+
 		'''
 		self.qtagwl = QListWidget()
 		self.qtagwl.setParent(self)
@@ -82,7 +89,22 @@ class ImageViewer(QMainWindow):
 		self.qthtimer = QTimer()
 		self.connect(self.qthtimer, SIGNAL('timeout()'), self.qtaghide)
 		'''
-	
+
+	def doNormalZoom(self):
+		self.scrollview.setZoomFactor(1.)
+
+	def doFitAllZoom(self):
+		self.scrollview.setZoomMode(ZOOM_FITALL)
+
+	def doFitCutZoom(self):
+		self.scrollview.setZoomMode(ZOOM_FITCUT)
+
+	def zoom(self):
+		self.scrollview.multiplyZoomFactor(1.5)
+
+	def unzoom(self):
+		self.scrollview.multiplyZoomFactor(1/1.5)
+
 	def spawn(self, files, currentFile):
 		self.files = files
 		self.currentIndex = files.index(currentFile)
@@ -146,15 +168,19 @@ class ImageViewer(QMainWindow):
 
 
 class ImageViewerCenter(QScrollArea):
-	def __init__(self, imageviewer, imgWidget):
+	topZoneEntered = Signal()
+	topZoneLeft = Signal()
+	leftZoneEntered = Signal()
+	leftZoneLeft = Signal()
+
+	def __init__(self, imgWidget):
 		QScrollArea.__init__(self)
 		self.zoomMode = ZOOM_FACTOR
 		self.zoomFactor = 1
 		self.moving = None
-		
-		self.imageviewer = imageviewer
+
 		self.setWidget(imgWidget)
-		
+
 		imgWidget.setAlignment(Qt.AlignCenter)
 		self.setAlignment(Qt.AlignCenter)
 		self.setMouseTracking(True)
@@ -163,7 +189,10 @@ class ImageViewerCenter(QScrollArea):
 		pal = QPalette()
 		pal.setColor(QPalette.Window, Qt.black)
 		self.setPalette(pal)
-		
+
+		self.leftZone = False
+		self.topZone = False
+
 	def mousePressEvent(self, ev):
 		self.moving = (ev.pos().x(), ev.pos().y())
 		self.movingScrolls = (self.horizontalScrollBar().value(), self.verticalScrollBar().value())
@@ -177,9 +206,20 @@ class ImageViewerCenter(QScrollArea):
 			self.horizontalScrollBar().setValue(self.movingScrolls[0] - (p.x() - self.moving[0]))
 			self.verticalScrollBar().setValue(self.movingScrolls[1] - (p.y() - self.moving[1]))
 		else:
-			self.imageviewer.docktagger.setVisible(ev.x() < 30)
-			self.imageviewer.toolbar.setVisible(ev.y() < 30)
-	
+			newLeft = (ev.x() < 30)
+			if newLeft and not self.leftZone:
+				self.leftZoneEntered.emit()
+			elif self.leftZone and not newLeft:
+				self.leftZoneLeft.emit()
+			self.leftZone = newLeft
+
+			newTop = (ev.y() < 30)
+			if newTop and not self.topZone:
+				self.topZoneEntered.emit()
+			elif self.topZone and not newTop:
+				self.topZoneLeft.emit()
+			self.topZone = newTop
+
 	def resizeEvent(self, ev):
 		super(ImageViewerCenter, self).resizeEvent(ev)
 		if self.zoomMode != ZOOM_FACTOR:
@@ -196,18 +236,18 @@ class ImageViewerCenter(QScrollArea):
 			self.imageviewer.nextImage_s()
 		else:
 			QScrollArea.keyReleaseEvent(self, ev)
-	
-	def setZoom(self, mode):
+
+	def setZoomMode(self, mode):
 		self.zoomMode = mode
 		self._rebuildZoom()
-	
+
 	def setZoomFactor(self, factor):
 		self.zoomFactor = factor
-		self.setZoom(ZOOM_FACTOR)
-		
-	def mulZoomFactor(self, factor):
+		self.setZoomMode(ZOOM_FACTOR)
+
+	def multiplyZoomFactor(self, factor):
 		self.setZoomFactor(self.zoomFactor * factor)
-	
+
 	def _rebuildZoom(self):
 		if self.zoomMode == ZOOM_FACTOR:
 			if self.zoomFactor == 1:
