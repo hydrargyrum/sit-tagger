@@ -10,6 +10,7 @@ except ImportError:
 import os
 import thumbnailmaker
 
+
 class ThumbnailItem(QListWidgetItem):
 	def __init__(self, path, widget=None):
 		super(ThumbnailItem, self).__init__(os.path.basename(path), widget)
@@ -24,17 +25,18 @@ class ThumbnailItem(QListWidgetItem):
 		task.emitter.thumbnailDone.connect(self._thumbnailDone)
 		if task.isFinished:
 			self._thumbnailDone(task.result)
-	
+
 	@Slot(str)
 	def _thumbnailDone(self, thumbpath):
 		if thumbpath:
 			self.setIcon(QIcon(thumbpath))
-	
+
 	def cancelThumbnail(self):
 		thumbnailmaker.maker.cancelTask(self.path)
-	
+
 	def getPath(self):
 		return self.path
+
 
 class ImageList(QListWidget):
 	def __init__(self):
@@ -47,17 +49,17 @@ class ImageList(QListWidget):
 		self.setUniformItemSizes(True)
 		self.setLayoutMode(QListView.Batched)
 		self.setBatchSize(1)
-	
+
 	def removeItems(self):
 		for i in xrange(self.count()):
 			self.item(i).cancelThumbnail()
 		self.clear()
-	
+
 	def setFiles(self, files):
 		self.removeItems()
 		
 		for f in files:
 			item = ThumbnailItem(f, self)
-	
+
 	def getFiles(self):
 		return [self.item(i).getPath() for i in xrange(self.count())]

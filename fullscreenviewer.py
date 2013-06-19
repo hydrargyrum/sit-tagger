@@ -10,17 +10,22 @@ except ImportError:
 
 from tagwidgets import TagEditor
 
+
 ZOOM_FACTOR = 0
 ZOOM_FITALL = 1
 ZOOM_FITCUT = 2
 
+
 class AutoHideMixin:
 	def leaveEvent(self, ev):
 		self.hide()
+
+
 class AutoHideDock(QDockWidget, AutoHideMixin):
 	pass
 #class AutoHideToolBar(QToolBar, AutoHideMixin):
 #	pass
+
 
 class ImageViewer(QMainWindow):
 	def __init__(self, tagger):
@@ -49,12 +54,12 @@ class ImageViewer(QMainWindow):
 		self.fullscreenAction.setCheckable(True)
 		self.fullscreenAction.toggled.connect(self.setFullscreen)
 
-		self.navPrevAction = act = self.toolbar.addAction('Prev')
+		act = self.toolbar.addAction('Prev')
 		act.setShortcut(QKeySequence(Qt.Key_Backspace))
-		act.triggered.connect(self.prevFile)
-		self.navNextAction = act = self.toolbar.addAction('Next')
+		act.triggered.connect(self.showPreviousFile)
+		act = self.toolbar.addAction('Next')
 		act.setShortcut(QKeySequence(Qt.Key_Space))
-		act.triggered.connect(self.nextFile)
+		act.triggered.connect(self.showNextFile)
 		#~ act.setShortcutContext(Qt.WidgetWithChildrenShortcut)
 
 		self.tageditor = TagEditor(self.tagger)
@@ -87,18 +92,36 @@ class ImageViewer(QMainWindow):
 		self.connect(self.qthtimer, SIGNAL('timeout()'), self.qtaghide)
 		'''
 
+	def eventFilter(self, sview, ev):
+		if ev.type() == QEvent.KeyPress:
+			if ev.key() == Qt.Key_Escape:
+				self.fullscreenAction.setChecked(False)
+				return True
+			elif ev.key() in [Qt.Key_PageUp, Qt.Key_Backspace]: # qactions
+				self.showPreviousFile()
+				return True
+			elif ev.key() in [Qt.Key_PageDown, Qt.Key_Space]:
+				self.showNextFile()
+				return True
+		return super(ImageViewer, self).eventFilter(sview, ev)
+
+	@Slot()
 	def doNormalZoom(self):
 		self.scrollview.setZoomFactor(1.)
 
+	@Slot()
 	def doFitAllZoom(self):
 		self.scrollview.setZoomMode(ZOOM_FITALL)
 
+	@Slot()
 	def doFitCutZoom(self):
 		self.scrollview.setZoomMode(ZOOM_FITCUT)
 
+	@Slot()
 	def zoom(self):
 		self.scrollview.multiplyZoomFactor(1.5)
 
+	@Slot()
 	def unzoom(self):
 		self.scrollview.multiplyZoomFactor(1/1.5)
 
@@ -119,50 +142,31 @@ class ImageViewer(QMainWindow):
 	def setFile(self, file):
 		self.tageditor.setFile(file)
 		self.scrollview.setFile(file)
-	
-	def eventFilter(self, sview, ev):
-		if ev.type() == QEvent.KeyPress:
-			if ev.key() == Qt.Key_Escape:
-				self.fullscreenAction.setChecked(False)
-				return True
-			elif ev.key() in [Qt.Key_PageUp, Qt.Key_Backspace]: # qactions
-				self.prevFile()
-				return True
-			elif ev.key() in [Qt.Key_PageDown, Qt.Key_Space]:
-				self.nextFile()
-				return True
-		return super(ImageViewer, self).eventFilter(sview, ev)
-	
+
+	@Slot()
 	def copyPreviousTags(self):
 		tags = self.tagger.get_tags(self.files[self.currentIndex - 1])
 		self.tagger.set_tags(self.files[self.currentIndex], tags)
 		self.tagger.sync()
 		self.tageditor.setFile(self.files[self.currentIndex])
-		
-	
+
 	def setFullscreen(self, full):
-		#~ print 'OMG', full
 		if full:
-			#~ self.setWindowState(self.windowState() | Qt.WindowFullScreen)
 			self.showFullScreen()
 		else:
-			#~ self.setWindowState(self.windowState() & ~Qt.WindowFullScreen)
 			self.showNormal()
 
-	def prevFile(self):
+	@Slot()
+	def showPreviousFile(self):
 		if self.currentIndex > 0:
 			self.currentIndex -= 1
 			self.setFile(self.files[self.currentIndex])
-	
-	def nextFile(self):
+
+	@Slot()
+	def showNextFile(self):
 		if self.currentIndex < len(self.files) - 1:
 			self.currentIndex += 1
 			self.setFile(self.files[self.currentIndex])
-		
-	#~ def resizeEvent(self, ev):
-		#~ QMainWindow.resizeEvent(self, ev)
-		#~ if self.zoomMode in (1,2):
-			#~ self._redraw()
 
 
 class ImageViewerCenter(QScrollArea):
@@ -179,13 +183,14 @@ class ImageViewerCenter(QScrollArea):
 
 		imgWidget = QLabel()
 		imgWidget.setMouseTracking(True)
+		imgWidget.setAlignment(Qt.AlignCenter)
 		self.setWidget(imgWidget)
 
-		imgWidget.setAlignment(Qt.AlignCenter)
 		self.setAlignment(Qt.AlignCenter)
 		self.setMouseTracking(True)
 		self.setFrameShape(self.NoFrame)
 		self.setWidgetResizable(True)
+
 		pal = QPalette()
 		pal.setColor(QPalette.Window, Qt.black)
 		self.setPalette(pal)
@@ -193,6 +198,7 @@ class ImageViewerCenter(QScrollArea):
 		self.leftZone = False
 		self.topZone = False
 
+	### events
 	def mousePressEvent(self, ev):
 		self.moving = (ev.pos().x(), ev.pos().y())
 		self.movingScrolls = (self.horizontalScrollBar().value(), self.verticalScrollBar().value())
@@ -237,6 +243,7 @@ class ImageViewerCenter(QScrollArea):
 		else:
 			QScrollArea.keyReleaseEvent(self, ev)
 
+	### public
 	def setZoomMode(self, mode):
 		self.zoomMode = mode
 		self._rebuildZoom()
@@ -248,30 +255,31 @@ class ImageViewerCenter(QScrollArea):
 	def multiplyZoomFactor(self, factor):
 		self.setZoomFactor(self.zoomFactor * factor)
 
-	def _rebuildZoom(self):
-		if self.zoomMode == ZOOM_FACTOR:
-			if self.zoomFactor == 1:
-				self._setPixmap(self.fullPix)
-			else:
-				self._setPixmap(self._scaledFull(self.fullPix.size() * self.zoomFactor))
-		elif self.zoomMode == ZOOM_FITALL:
-			newpix = self._scaledFull(self.viewport().size())
-			self._setPixmap(newpix)
-			self.zoomFactor = newpix.size().width() / float(self.fullPix.size().width())
-		elif self.zoomMode == ZOOM_FITCUT:
-			newpix = self._scaledFull(self.viewport().size(), Qt.KeepAspectRatioByExpanding)
-			self._setPixmap(newpix)
-			self.zoomFactor = newpix.size().width() / float(self.fullPix.size().width())
-	
-	def _scaledFull(self, size, mode=Qt.KeepAspectRatio):
-		return self.fullPix.scaled(size, mode, Qt.SmoothTransformation)
-	
-	def _setPixmap(self, pixmap):
-		self.widget().setPixmap(pixmap)
-	
 	def setFile(self, file):
 		self.file = file
-		self.fullPix = QPixmap(file)
+		self.originalPixmap = QPixmap(file)
 		#~ self.widget().setPixmap()
 		self._rebuildZoom()
 
+	###
+	def _rebuildZoom(self):
+		if self.zoomMode == ZOOM_FACTOR:
+			if self.zoomFactor == 1:
+				self._setPixmap(self.originalPixmap)
+			else:
+				self._setPixmap(self._getScaledPixmap(self.originalPixmap.size() * self.zoomFactor))
+		elif self.zoomMode == ZOOM_FITALL:
+			newpix = self._getScaledPixmap(self.viewport().size())
+			self._setPixmap(newpix)
+			self.zoomFactor = newpix.size().width() / float(self.originalPixmap.size().width())
+		elif self.zoomMode == ZOOM_FITCUT:
+			newpix = self._getScaledPixmap(self.viewport().size(), Qt.KeepAspectRatioByExpanding)
+			self._setPixmap(newpix)
+			self.zoomFactor = newpix.size().width() / float(self.originalPixmap.size().width())
+
+	def _getScaledPixmap(self, size, mode=Qt.KeepAspectRatio):
+		return self.originalPixmap.scaled(size, mode, Qt.SmoothTransformation)
+
+	def _setPixmap(self, pixmap):
+		self.widget().setPixmap(pixmap)
+	

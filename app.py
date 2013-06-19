@@ -71,12 +71,9 @@ class Win(QMainWindow):
 		self.dirChooser.setModel(self.dirModel)
 		self.dirChooser.setRootIndex(qidx)
 		
-		toPath = lambda qidx: str(self.dirModel.filePath(qidx))
-		#~ self.dirChooser.clicked.connect(lambda qidx: self.browsePath(toPath(qidx)))
 		self.dirChooser.clicked.connect(self.browseSelectedDir)
-		#~ self.imageList.itemClicked.connect(lambda qitem: self.editTags(str(qitem.data(Qt.UserRole).toString())))
-		self.imageList.itemClicked.connect(self._editTagsSlot)
-		self.imageList.itemDoubleClicked.connect(self._spawnViewerSlot)
+		self.imageList.itemClicked.connect(self._editTagsItem)
+		self.imageList.itemDoubleClicked.connect(self._spawnViewerItem)
 		
 		self.tabWidget.currentChanged.connect(self._tabSelected)
 		self.tagChooser.changed.connect(self.browseSelectedTags)
@@ -88,10 +85,11 @@ class Win(QMainWindow):
 		self.viewer.spawn(files, currentFile)
 	
 	@Slot(QListWidgetItem)
-	def _editTagsSlot(self, qitem):
+	def _editTagsItem(self, qitem):
 		self.editTags(qitem.getPath())
+
 	@Slot(QListWidgetItem)
-	def _spawnViewerSlot(self, qitem):
+	def _spawnViewerItem(self, qitem):
 		self.spawnViewer(self.imageList.getFiles(), qitem.getPath())
 	
 	@Slot()
