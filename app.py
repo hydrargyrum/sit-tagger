@@ -26,9 +26,6 @@ from fullscreenviewer import ImageViewer
 # c = qlistview
 # d = tageditor
 
-bitset = lambda num, bit, value: (num | (1 << bit)) ^ ((1 ^ value) << bit)
-bitset2 = lambda num, bits, value: (num | bits) ^ ((value and [0] or [bits])[0])
-
 
 class Win(QMainWindow):
 	def __init__(self, options):
@@ -75,14 +72,14 @@ class Win(QMainWindow):
 		self.dirChooser.setRootIndex(qidx)
 		
 		toPath = lambda qidx: str(self.dirModel.filePath(qidx))
-		#~ self.dirChooser.clicked.connect(lambda qidx: self.setDisplayedDir(toPath(qidx)))
-		self.dirChooser.clicked.connect(self._setDirSource)
+		#~ self.dirChooser.clicked.connect(lambda qidx: self.browsePath(toPath(qidx)))
+		self.dirChooser.clicked.connect(self.browseSelectedDir)
 		#~ self.imageList.itemClicked.connect(lambda qitem: self.editTags(str(qitem.data(Qt.UserRole).toString())))
 		self.imageList.itemClicked.connect(self._editTagsSlot)
 		self.imageList.itemDoubleClicked.connect(self._spawnViewerSlot)
 		
-		self.tabWidget.currentChanged.connect(self._setFilesSource)
-		self.tagChooser.changed.connect(self._setTagsSource)
+		self.tabWidget.currentChanged.connect(self._tabSelected)
+		self.tagChooser.changed.connect(self.browseSelectedTags)
 	
 	def editTags(self, path):
 		self.tagEditor.setFile(path)
@@ -98,24 +95,25 @@ class Win(QMainWindow):
 		self.spawnViewer(self.imageList.getFiles(), qitem.getPath())
 	
 	@Slot()
-	def _setDirSource(self):
-		self._setFilesSource(0)
+	def browseSelectedDir(self):
+		path = str(self.dirModel.filePath(self.dirChooser.currentIndex()))
+		files = [os.path.join(path, f) for f in os.listdir(path)]
+		files = filter(os.path.isfile, files)
+		files.sort()
+		self.imageList.setFiles(files)
+
 	@Slot()
-	def _setTagsSource(self):
-		self._setFilesSource(1)
-	
+	def browseSelectedTags(self):
+		self.imageList.setFiles(self.tagChooser.matchingFiles())
+
 	@Slot(int)
-	def _setFilesSource(self, idx):
+	def _tabSelected(self, idx):
 		if idx == 0:
-			path = str(self.dirModel.filePath(self.dirChooser.currentIndex()))
-			files = [os.path.join(path, f) for f in os.listdir(path)]
-			files = filter(os.path.isfile, files)
-			files.sort()
-			self.imageList.setFiles(files)
+			self.browseSelectedDir()
 		else:
-			self.imageList.setFiles(self.tagChooser.matchingFiles())
+			self.browseSelectedTags()
 	
-	def setDisplayedDir(self, path):
+	def browsePath(self, path):
 		self.imageList.setFiles(os.path.join(path, f) for f in os.listdir(path))
 
 

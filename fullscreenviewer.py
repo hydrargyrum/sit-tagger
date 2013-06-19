@@ -106,7 +106,7 @@ class ImageViewer(QMainWindow):
 		self.files = files
 		self.currentIndex = files.index(currentFile)
 		
-		self.showFile(currentFile)
+		self.setFile(currentFile)
 		if self.isHidden():
 			#~ self.setWindowState(self.windowState() | Qt.WindowMaximized)
 			#~ self.show()
@@ -115,7 +115,7 @@ class ImageViewer(QMainWindow):
 		else:
 			self.show()
 	
-	def showFile(self, file):
+	def setFile(self, file):
 		self.tageditor.setFile(file)
 		self.scrollview.setFile(file)
 	
@@ -151,12 +151,12 @@ class ImageViewer(QMainWindow):
 	def prevFile(self):
 		if self.currentIndex > 0:
 			self.currentIndex -= 1
-			self.showFile(self.files[self.currentIndex])
+			self.setFile(self.files[self.currentIndex])
 	
 	def nextFile(self):
 		if self.currentIndex < len(self.files) - 1:
 			self.currentIndex += 1
-			self.showFile(self.files[self.currentIndex])
+			self.setFile(self.files[self.currentIndex])
 		
 	#~ def resizeEvent(self, ev):
 		#~ QMainWindow.resizeEvent(self, ev)
