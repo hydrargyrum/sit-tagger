@@ -31,11 +31,8 @@ class ImageViewer(QMainWindow):
 		self.files = []
 		
 		self._init_widgets()
-		
-	def _init_widgets(self):
-		self.labimg = QLabel()
-		self.labimg.setMouseTracking(True)
 
+	def _init_widgets(self):
 		#self.toolbar = AutoHideToolBar()
 		self.toolbar = QToolBar()
 		self.addToolBar(self.toolbar)
@@ -66,7 +63,7 @@ class ImageViewer(QMainWindow):
 		self.addDockWidget(Qt.LeftDockWidgetArea, self.docktagger)
 		self.docktagger.hide()
 
-		self.scrollview = ImageViewerCenter(self.labimg)
+		self.scrollview = ImageViewerCenter()
 		self.scrollview.installEventFilter(self) ### !
 		self.setCentralWidget(self.scrollview)
 
@@ -173,12 +170,14 @@ class ImageViewerCenter(QScrollArea):
 	leftZoneEntered = Signal()
 	leftZoneLeft = Signal()
 
-	def __init__(self, imgWidget):
+	def __init__(self):
 		QScrollArea.__init__(self)
 		self.zoomMode = ZOOM_FACTOR
 		self.zoomFactor = 1
 		self.moving = None
 
+		imgWidget = QLabel()
+		imgWidget.setMouseTracking(True)
 		self.setWidget(imgWidget)
 
 		imgWidget.setAlignment(Qt.AlignCenter)
