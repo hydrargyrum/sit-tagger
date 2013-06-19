@@ -2,8 +2,14 @@
 # base: 2010-02
 # license: WTFPLv2
 
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+try:
+	from PyQt4.QtCore import *
+	from PyQt4.QtGui import *
+	Signal = pyqtSignal
+	Slot = pyqtSlot
+except ImportError:
+	from PySide.QtCore import *
+	from PySide.QtGui import *
 import sys, os
 import time
 
@@ -84,21 +90,21 @@ class Win(QMainWindow):
 	def spawnViewer(self, files, currentFile):
 		self.viewer.spawn(files, currentFile)
 	
-	@pyqtSlot(QListWidgetItem)
+	@Slot(QListWidgetItem)
 	def _editTagsSlot(self, qitem):
 		self.editTags(qitem.getPath())
-	@pyqtSlot(QListWidgetItem)
+	@Slot(QListWidgetItem)
 	def _spawnViewerSlot(self, qitem):
 		self.spawnViewer(self.imageList.getFiles(), qitem.getPath())
 	
-	@pyqtSlot()
+	@Slot()
 	def _setDirSource(self):
 		self._setFilesSource(0)
-	@pyqtSlot()
+	@Slot()
 	def _setTagsSource(self):
 		self._setFilesSource(1)
 	
-	@pyqtSlot(int)
+	@Slot(int)
 	def _setFilesSource(self, idx):
 		if idx == 0:
 			path = str(self.dirModel.filePath(self.dirChooser.currentIndex()))

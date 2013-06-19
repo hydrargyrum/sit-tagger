@@ -1,6 +1,12 @@
 
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+try:
+	from PyQt4.QtCore import *
+	from PyQt4.QtGui import *
+	Signal = pyqtSignal
+	Slot = pyqtSlot
+except ImportError:
+	from PySide.QtCore import *
+	from PySide.QtGui import *
 import os
 import taglib
 
@@ -39,7 +45,7 @@ class TagEditor(QListWidget):
 				item.setCheckState(Qt.Unchecked)
 			self.addItem(item)
 	
-	@pyqtSlot(QListWidgetItem)
+	@Slot(QListWidgetItem)
 	def _tagStateChanged(self, item):
 		if item.checkState() == Qt.Unchecked:
 			self.tagger.del_tags(self.path, [str(item.text())])
@@ -49,7 +55,7 @@ class TagEditor(QListWidget):
 
 
 class TagChooser(QListWidget):
-	changed = pyqtSignal()
+	changed = Signal()
 	
 	def __init__(self, tagger):
 		super(TagChooser,self).__init__()

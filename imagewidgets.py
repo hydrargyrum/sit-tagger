@@ -1,6 +1,12 @@
 
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+try:
+	from PyQt4.QtCore import *
+	from PyQt4.QtGui import *
+	Signal = pyqtSignal
+	Slot = pyqtSlot
+except ImportError:
+	from PySide.QtCore import *
+	from PySide.QtGui import *
 import os
 import thumbnailmaker
 
@@ -19,7 +25,7 @@ class ThumbnailItem(QListWidgetItem):
 		if task.isFinished:
 			self._thumbnailDone(task.result)
 	
-	@pyqtSlot(str)
+	@Slot(str)
 	def _thumbnailDone(self, thumbpath):
 		if thumbpath:
 			self.setIcon(QIcon(thumbpath))

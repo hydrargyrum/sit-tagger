@@ -1,6 +1,12 @@
 
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+try:
+	from PyQt4.QtCore import *
+	from PyQt4.QtGui import *
+	Signal = pyqtSignal
+	Slot = pyqtSlot
+except ImportError:
+	from PySide.QtCore import *
+	from PySide.QtGui import *
 import time
 
 import thumbnail
@@ -27,7 +33,7 @@ class ThumbnailMaker(QThreadPool):
 		finally:
 			self.tasksMutex.unlock()
 	
-	@pyqtSlot(str)
+	@Slot(str)
 	def _finish(self, path):
 		self.tasksMutex.lock()
 		try:
@@ -47,7 +53,7 @@ class ThumbnailMaker(QThreadPool):
 
 	class Task(QRunnable):
 		class Emitter(QObject):
-			thumbnailDone = pyqtSignal(str)
+			thumbnailDone = Signal(str)
 			
 			def emitItDamnit(self, p):
 				self.thumbnailDone.emit(p)
