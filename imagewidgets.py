@@ -45,8 +45,8 @@ class ImageList(QListWidget):
 		self.setMovement(QListView.Static)
 		self.setResizeMode(QListView.Adjust)
 		self.setIconSize(QSize(256, 256))
-		#~ self.setGridSize(QSize(256, 256))
-		self.setUniformItemSizes(True)
+		self.setGridSize(QSize(256, 256))
+		#~ self.setUniformItemSizes(True)
 		self.setLayoutMode(QListView.Batched)
 		self.setBatchSize(1)
 
