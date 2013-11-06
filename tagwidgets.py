@@ -31,7 +31,7 @@ class TagEditor(QListWidget):
 	@Slot()
 	def _createTag(self):
 		qreply = QInputDialog.getText(self, 'Enter a tag name', 'New tag')
-		tag = str(qreply[0])
+		tag = unicode(qreply[0])
 		if not qreply[1]:
 			return
 		self.tagger.create_tag(tag)
@@ -84,10 +84,10 @@ class TagEditor(QListWidget):
 	def _tagStateChanged(self, item):
 		if item.checkState() == Qt.Unchecked:
 			for path in self.paths:
-				self.tagger.del_tags(path, [str(item.text())])
+				self.tagger.del_tags(path, [unicode(item.text())])
 		else:
 			for path in self.paths:
-				self.tagger.add_tags(path, [str(item.text())])
+				self.tagger.add_tags(path, [unicode(item.text())])
 		self.tagger.sync()
 
 
@@ -110,7 +110,7 @@ class TagChooser(QListWidget):
 		for i in xrange(self.count()):
 			item = self.item(i)
 			if item.checkState() == Qt.Checked:
-				tags.append(str(item.text()))
+				tags.append(unicode(item.text()))
 		return tags
 
 	def matchingFiles(self):

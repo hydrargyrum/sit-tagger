@@ -4,14 +4,26 @@
 import shelve
 import os
 
+def tos(u):
+	if isinstance(u, str):
+		return u
+	else:
+		return u.encode('utf-8')
+
+def froms(u):
+	if isinstance(u, str):
+		return u.decode('utf-8')
+	else:
+		return u
+
 class Tagging(object):
 	def __init__(self, dbpath):
 		self.dbpath = dbpath
 		self.db = shelve.open(dbpath, writeback=True)
 		self.rev = {}
-		for k in self.db:
-			for v in self.db[k]:
-				self.rev.setdefault(v, {})[k] = None
+		for path in self.db:
+			for v in self.db[path]:
+				self.rev.setdefault(v, {})[path] = None
 	
 	def create_tag(self, tag):
 		self.rev.setdefault(tag, {})
@@ -19,15 +31,17 @@ class Tagging(object):
 	def all_tags(self):
 		return list(self.rev.keys())
 	
-	def get_tags(self, path):
-		if path not in self.db:
+	def get_tags(self, upath):
+		path = tos(upath)
+		if tos(path) not in self.db:
 			return []
 		return list(self.db[path].keys())
 	
 	def get_files(self, tag):
-		return list(self.rev[tag].keys())
+		return list(map(froms, self.rev[tag].keys()))
 	
-	def set_tags(self, path, tags):
+	def set_tags(self, upath, tags):
+		path = tos(upath)
 		if path in self.db:
 			for old in self.db[path]:
 				del self.rev[old][path]
@@ -36,14 +50,16 @@ class Tagging(object):
 			self.db[path][t] = None
 			self.rev.setdefault(t, {})[path] = None
 	
-	def add_tags(self, path, tags):
+	def add_tags(self, upath, tags):
+		path = tos(upath)
 		if path not in self.db:
 			self.db[path] = {}
 		for t in tags:
 			self.db[path][t] = None
 			self.rev.setdefault(t, {})[path] = None
 	
-	def del_tags(self, path, tags):
+	def del_tags(self, upath, tags):
+		path = tos(upath)
 		if path not in self.db:
 			return
 		for t in tags:

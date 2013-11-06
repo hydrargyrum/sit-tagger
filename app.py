@@ -66,7 +66,7 @@ class Win(QMainWindow):
 		self.setWindowTitle('Tags4')
 
 		self.dirModel = QFileSystemModel()
-		self.dirModel.setFilter(QDir.AllDirs | QDir.Drives | QDir.Hidden)
+		self.dirModel.setFilter(QDir.AllDirs | QDir.Drives | QDir.Hidden | QDir.NoDotAndDotDot)
 		qidx = self.dirModel.setRootPath(self.rootPath)
 		self.dirChooser.setModel(self.dirModel)
 		self.dirChooser.setRootIndex(qidx)
@@ -98,7 +98,9 @@ class Win(QMainWindow):
 
 	@Slot()
 	def browseSelectedDir(self):
-		path = str(self.dirModel.filePath(self.dirChooser.currentIndex()))
+		path = unicode(self.dirModel.filePath(self.dirChooser.currentIndex()))
+		if not path:
+			return
 		files = [os.path.join(path, f) for f in os.listdir(path)]
 		files = filter(os.path.isfile, files)
 		files.sort()
@@ -133,7 +135,7 @@ def parse_options(args):
 
 if __name__ == '__main__':
 	app = QApplication(sys.argv)
-	opts = parse_options(list(map(str, app.arguments())))
+	opts = parse_options(list(map(unicode, app.arguments())))
 	win = Win(opts)
 	win.show()
 	app.exec_()
