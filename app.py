@@ -30,68 +30,72 @@ from fullscreenviewer import ImageViewer
 class Win(QMainWindow):
 	def __init__(self, options):
 		super(Win, self).__init__()
-		
+
 		self.tagger = taglib.TaggingWithRoot(options.db, options.filespath)
 		self.rootPath = options.filespath
-		
+
 		self._init_widgets()
 		self._init_more()
-	
+
 	def _init_widgets(self):
 		bigsplitter = QSplitter(Qt.Horizontal, self)
 		self.setCentralWidget(bigsplitter)
-		
+
 		leftsplitter = QSplitter(Qt.Vertical, self)
-		
+
 		self.tabWidget = QTabWidget(self)
-		
+
 		self.tagChooser = TagChooser(self.tagger)
 		self.dirChooser = QTreeView(self)
-		
+
 		self.tabWidget.addTab(self.dirChooser, 'Dir')
 		self.tabWidget.addTab(self.tagChooser, 'Tags')
-		
+
 		self.tagEditor = TagEditor(self.tagger)
 		self.imageList = ImageList()
-		
+
 		leftsplitter.addWidget(self.tabWidget)
 		leftsplitter.addWidget(self.tagEditor)
 
 		bigsplitter.addWidget(leftsplitter)
 		bigsplitter.addWidget(self.imageList)
-		
+
 		self.viewer = ImageViewer(self.tagger)
-	
+
 	def _init_more(self):
 		self.setWindowTitle('Tags4')
-		
+
 		self.dirModel = QFileSystemModel()
 		self.dirModel.setFilter(QDir.AllDirs | QDir.Drives | QDir.Hidden)
 		qidx = self.dirModel.setRootPath(self.rootPath)
 		self.dirChooser.setModel(self.dirModel)
 		self.dirChooser.setRootIndex(qidx)
-		
+
 		self.dirChooser.clicked.connect(self.browseSelectedDir)
-		self.imageList.itemClicked.connect(self._editTagsItem)
+		self.imageList.itemSelectionChanged.connect(self._editTagsItems)
 		self.imageList.itemDoubleClicked.connect(self._spawnViewerItem)
-		
+		self.imageList.setSelectionMode(QAbstractItemView.ExtendedSelection)
+
 		self.tabWidget.currentChanged.connect(self._tabSelected)
 		self.tagChooser.changed.connect(self.browseSelectedTags)
-	
+
 	def editTags(self, path):
 		self.tagEditor.setFile(path)
-	
+
+	def editTagsItems(self, paths):
+		self.tagEditor.setFiles(paths)
+
 	def spawnViewer(self, files, currentFile):
 		self.viewer.spawn(files, currentFile)
-	
-	@Slot(QListWidgetItem)
-	def _editTagsItem(self, qitem):
-		self.editTags(qitem.getPath())
+
+	@Slot()
+	def _editTagsItems(self):
+		self.editTagsItems([qitem.getPath() for qitem in self.imageList.selectedItems()])
 
 	@Slot(QListWidgetItem)
 	def _spawnViewerItem(self, qitem):
 		self.spawnViewer(self.imageList.getFiles(), qitem.getPath())
-	
+
 	@Slot()
 	def browseSelectedDir(self):
 		path = str(self.dirModel.filePath(self.dirChooser.currentIndex()))
@@ -110,7 +114,7 @@ class Win(QMainWindow):
 			self.browseSelectedDir()
 		else:
 			self.browseSelectedTags()
-	
+
 	def browsePath(self, path):
 		self.imageList.setFiles(os.path.join(path, f) for f in os.listdir(path))
 

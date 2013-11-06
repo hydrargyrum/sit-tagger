@@ -31,28 +31,45 @@ class TagEditor(QListWidget):
 		if not qreply[1]:
 			return
 		self.tagger.create_tag(tag)
-		self.setFile(self.path)
+		self.setFiles(self.paths)
 
 	def setFile(self, path):
-		self.clear()
+		return self.setFiles([path])
 
-		self.path = path
-		filetags = self.tagger.get_tags(self.path)
+	def setFiles(self, paths):
+		self.clear()
+		self.paths = paths
+
+		tags_per_file = dict((path, self.tagger.get_tags(path)) for path in paths)
 		for t in sorted(self.tagger.all_tags()):
 			item = QListWidgetItem(t)
 			item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
-			if t in filetags:
-				item.setCheckState(Qt.Checked)
-			else:
-				item.setCheckState(Qt.Unchecked)
+			item.setCheckState(self._state(t, tags_per_file))
 			self.addItem(item)
+
+	def _state(self, tag, tags_per_file):
+		if not tags_per_file:
+			return Qt.Unchecked
+		
+		it = iter(tags_per_file.values())
+		first = (tag in it.next())
+		for tags in it:
+			current = (tag in tags)
+			if first != current:
+				return Qt.PartiallyChecked
+		if first:
+			return Qt.Checked
+		else:
+			return Qt.Unchecked
 
 	@Slot(QListWidgetItem)
 	def _tagStateChanged(self, item):
 		if item.checkState() == Qt.Unchecked:
-			self.tagger.del_tags(self.path, [str(item.text())])
+			for path in self.paths:
+				self.tagger.del_tags(path, [str(item.text())])
 		else:
-			self.tagger.add_tags(self.path, [str(item.text())])
+			for path in self.paths:
+				self.tagger.add_tags(path, [str(item.text())])
 		self.tagger.sync()
 
 
