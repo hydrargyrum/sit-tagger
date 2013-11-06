@@ -20,6 +20,10 @@ class TagEditor(QListWidget):
 		act.triggered.connect(self._createTag)
 		self.addAction(act)
 
+		act = QAction('&Rename tag', self)
+		act.triggered.connect(self._renameTag)
+		self.addAction(act)
+
 		self.itemChanged.connect(self._tagStateChanged)
 
 		self.tagger = tagger
@@ -31,6 +35,20 @@ class TagEditor(QListWidget):
 		if not qreply[1]:
 			return
 		self.tagger.create_tag(tag)
+		self.setFiles(self.paths)
+
+	@Slot()
+	def _renameTag(self):
+		item = self.currentItem()
+		if not item:
+			return
+		old_tag = unicode(item.text())
+		
+		qreply = QInputDialog.getText(self, 'Enter a tag name', 'New tag')
+		new_tag = unicode(qreply[0])
+		if not qreply[1]:
+			return
+		self.tagger.rename_tag(old_tag, new_tag)
 		self.setFiles(self.paths)
 
 	def setFile(self, path):

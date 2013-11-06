@@ -53,6 +53,15 @@ class Tagging(object):
 			except KeyError:
 				pass
 
+	def rename_tag(self, old, new):
+		for tags in self.db.values():
+			if old in tags:
+				del tags[old]
+				tags[new] = None
+
+		self.rev[new] = self.rev[old]
+		del self.rev[old]
+
 	def sync(self):
 		self.db.sync()
 
