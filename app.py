@@ -121,16 +121,16 @@ class Win(QMainWindow):
 		self.imageList.setFiles(os.path.join(path, f) for f in os.listdir(path))
 
 
+def xdg_config():
+	return os.getenv('XDG_CONFIG_HOME', os.getenv('HOME', '/') + '/.config')
+
 def parse_options(args):
 	import optparse
 	parser = optparse.OptionParser()
 	parser.add_option('-d', '--database', metavar='FILE', dest='db')
 	parser.add_option('-p', '--path', dest='filespath')
+	parser.set_defaults(filespath='/', db=xdg_config() + '/sit-tagger.db')
 	opts, _ = parser.parse_args(args)
-	if not opts.db:
-		parser.error('No database specified')
-	elif not opts.filespath:
-		parser.error('No path specified')
 	return opts
 
 if __name__ == '__main__':
