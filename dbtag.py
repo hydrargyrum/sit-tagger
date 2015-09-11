@@ -70,4 +70,4 @@ class Db(object):
 		with self.db:
 			for row in self.db.execute('select file, extra from tags_files where tag in (%s)'
 			                           ' group by file having count(*) = ?' % items, params):
-				yield row[0], row[1]
+				yield row[0]
