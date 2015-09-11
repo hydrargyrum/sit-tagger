@@ -28,10 +28,10 @@ class AutoHideDock(QDockWidget, AutoHideMixin):
 
 
 class ImageViewer(QMainWindow):
-	def __init__(self, tagger):
+	def __init__(self, db):
 		super(ImageViewer, self).__init__()
 		
-		self.tagger = tagger
+		self.db = db
 		self.currentIndex = -1
 		self.files = []
 		
@@ -62,7 +62,7 @@ class ImageViewer(QMainWindow):
 		act.triggered.connect(self.showNextFile)
 		#~ act.setShortcutContext(Qt.WidgetWithChildrenShortcut)
 
-		self.tageditor = TagEditor(self.tagger)
+		self.tageditor = TagEditor(self.db)
 		self.docktagger = AutoHideDock()
 		self.docktagger.setWidget(self.tageditor)
 		self.addDockWidget(Qt.LeftDockWidgetArea, self.docktagger)
@@ -145,9 +145,8 @@ class ImageViewer(QMainWindow):
 
 	@Slot()
 	def copyPreviousTags(self):
-		tags = self.tagger.get_tags(self.files[self.currentIndex - 1])
-		self.tagger.set_tags(self.files[self.currentIndex], tags)
-		self.tagger.sync()
+		tags = self.db.find_tags_by_file(self.files[self.currentIndex - 1])
+		self.db.tag_file(self.files[self.currentIndex], tags)
 		self.tageditor.setFile(self.files[self.currentIndex])
 
 	def setFullscreen(self, full):

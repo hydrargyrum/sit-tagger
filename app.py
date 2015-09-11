@@ -17,7 +17,7 @@ except ImportError:
 import sys, os
 import time
 
-import taglib
+import dbtag
 from imagewidgets import ImageList
 from tagwidgets import TagEditor, TagChooser
 from fullscreenviewer import ImageViewer
@@ -35,7 +35,9 @@ class Win(QMainWindow):
 	def __init__(self, options):
 		super(Win, self).__init__()
 
-		self.tagger = taglib.TaggingWithRoot(options.db, options.filespath)
+		self.db = dbtag.Db()
+		self.db.open(options.db)
+		self.db.create_tables()
 		self.rootPath = options.filespath
 
 		self._init_widgets()
@@ -49,13 +51,13 @@ class Win(QMainWindow):
 
 		self.tabWidget = QTabWidget(self)
 
-		self.tagChooser = TagChooser(self.tagger)
+		self.tagChooser = TagChooser(self.db)
 		self.dirChooser = QTreeView(self)
 
 		self.tabWidget.addTab(self.dirChooser, 'Dir')
 		self.tabWidget.addTab(self.tagChooser, 'Tags')
 
-		self.tagEditor = TagEditor(self.tagger)
+		self.tagEditor = TagEditor(self.db)
 		self.imageList = ImageList()
 
 		leftsplitter.addWidget(self.tabWidget)
@@ -64,7 +66,7 @@ class Win(QMainWindow):
 		bigsplitter.addWidget(leftsplitter)
 		bigsplitter.addWidget(self.imageList)
 
-		self.viewer = ImageViewer(self.tagger)
+		self.viewer = ImageViewer(self.db)
 
 	def _init_more(self):
 		self.setWindowTitle('Tags4')
@@ -133,7 +135,7 @@ def parse_options(args):
 	parser = optparse.OptionParser()
 	parser.add_option('-d', '--database', metavar='FILE', dest='db')
 	parser.add_option('-p', '--path', dest='filespath')
-	parser.set_defaults(filespath='/', db=xdg_config() + '/sit-tagger.db')
+	parser.set_defaults(filespath='/', db=xdg_config() + '/sit-tagger.sqlite')
 	opts, _ = parser.parse_args(args)
 	return opts
 

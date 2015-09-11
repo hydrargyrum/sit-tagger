@@ -8,11 +8,10 @@ except ImportError:
 	from PySide.QtCore import *
 	from PySide.QtGui import *
 import os
-import taglib
 
 
 class TagEditor(QListWidget):
-	def __init__(self, tagger):
+	def __init__(self, db):
 		super(TagEditor, self).__init__()
 
 		self.setContextMenuPolicy(Qt.ActionsContextMenu)
@@ -26,49 +25,64 @@ class TagEditor(QListWidget):
 
 		self.itemChanged.connect(self._tagStateChanged)
 
-		self.tagger = tagger
+		self.db = db
 
 	@Slot()
 	def _createTag(self):
-		qreply = QInputDialog.getText(self, 'Enter a tag name', 'New tag')
-		tag = unicode(qreply[0])
-		if not qreply[1]:
+		reply = QInputDialog.getText(self, 'Enter a tag name', 'New tag')
+		tag = reply[0]
+		if not reply[1]:
 			return
-		self.tagger.create_tag(tag)
-		self.setFiles(self.paths)
+		self._addItem(tag)
+		#self.tagger.create_tag(tag)
+		#self.setFiles(self.paths)
 
 	@Slot()
 	def _renameTag(self):
 		item = self.currentItem()
 		if not item:
 			return
-		old_tag = unicode(item.text())
-		
+		old_tag = item.text()
+
 		qreply = QInputDialog.getText(self, 'Enter a tag name', 'New tag')
-		new_tag = unicode(qreply[0])
+		new_tag = qreply[0]
 		if not qreply[1]:
 			return
-		self.tagger.rename_tag(old_tag, new_tag)
+		self.db.rename_tag(old_tag, new_tag)
 		self.setFiles(self.paths)
 
 	def setFile(self, path):
 		return self.setFiles([path])
 
+	def _addItem(self, name):
+		item = QListWidgetItem(name)
+		item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
+		self.addItem(item)
+		return item
+
 	def setFiles(self, paths):
 		self.clear()
 		self.paths = paths
 
-		tags_per_file = dict((path, self.tagger.get_tags(path)) for path in paths)
-		for t in sorted(self.tagger.all_tags()):
-			item = QListWidgetItem(t)
-			item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
-			item.setCheckState(self._state(t, tags_per_file))
-			self.addItem(item)
+		tags_per_file = dict((path, self.db.find_tags_by_file(path)) for path in paths)
+		for tag in sorted(self.db.list_tags()):
+			item = self._addItem(tag)
+			item.setCheckState(self._state(tag, tags_per_file))
 
 	def _state(self, tag, tags_per_file):
 		if not tags_per_file:
 			return Qt.Unchecked
-		
+
+		has_tag = any(tag in tags for tags in tags_per_file.values())
+		has_untag = any(tag not in tags for tags in tags_per_file.values())
+		if has_tag and has_untag:
+			return Qt.PartiallyChecked
+		elif has_tag:
+			return Qt.Checked
+		elif has_untag:
+			return Qt.Unchecked
+		assert False
+
 		it = iter(tags_per_file.values())
 		first = (tag in it.next())
 		for tags in it:
@@ -84,22 +98,21 @@ class TagEditor(QListWidget):
 	def _tagStateChanged(self, item):
 		if item.checkState() == Qt.Unchecked:
 			for path in self.paths:
-				self.tagger.del_tags(path, [unicode(item.text())])
+				self.db.untag_file(path, [item.text()])
 		else:
 			for path in self.paths:
-				self.tagger.add_tags(path, [unicode(item.text())])
-		self.tagger.sync()
+				self.db.tag_file(path, [item.text()])
 
 
 class TagChooser(QListWidget):
 	changed = Signal()
 
-	def __init__(self, tagger):
+	def __init__(self, db):
 		super(TagChooser,self).__init__()
-		self.tagger = tagger
-		
+		self.db = db
+
 		self.itemChanged.connect(self.changed)
-		for t in sorted(self.tagger.all_tags()):
+		for t in sorted(self.db.list_tags()):
 			item = QListWidgetItem(t)
 			item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
 			item.setCheckState(Qt.Unchecked)
@@ -110,17 +123,14 @@ class TagChooser(QListWidget):
 		for i in xrange(self.count()):
 			item = self.item(i)
 			if item.checkState() == Qt.Checked:
-				tags.append(unicode(item.text()))
+				tags.append(item.text())
 		return tags
 
 	def matchingFiles(self):
 		tags = self.selectedTags()
-		
+
 		if not tags:
 			return []
-		res = set(self.tagger.get_files(tags[0]))
-		for tag in tags[1:]:
-			res &= set(self.tagger.get_files(tag))
-		res = list(res)
+		res = list(self.db.find_files_by_tags(tags))
 		res.sort()
 		return res
