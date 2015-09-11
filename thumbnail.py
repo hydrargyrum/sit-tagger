@@ -127,9 +127,9 @@ def _gen_filenames(name, size=None):
 	
 	if size:
 		sizename = _any2size(size)[1]
-		return (os.path.expanduser('~/.thumbnails/%s/%s.png' % (sizename, md5uri)),)
+		return (os.path.expanduser('~/.cache/thumbnails/%s/%s.png' % (sizename, md5uri)),)
 	else:
-		tnname = os.path.expanduser('~/.thumbnails/%s/%s.png')
+		tnname = os.path.expanduser('~/.cache/thumbnails/%s/%s.png')
 		return (tnname % ('large', md5uri), tnname % ('normal', md5uri))
 
 
@@ -311,7 +311,7 @@ def put_fail(origname, appname, mtime=None, moreinfo=None):
 	`moreinfo` is a dict that can contain additional key/values to store in the thumbnail file.
 	'''
 	
-	apppath = os.path.expanduser('~/.thumbnails/fail/%s') % appname
+	apppath = os.path.expanduser('~/.cache/thumbnails/fail/%s') % appname
 	if not os.path.isdir(apppath):
 		os.makedirs(apppath, 0700)
 	
