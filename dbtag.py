@@ -71,3 +71,8 @@ class Db(object):
 			for row in self.db.execute('select file, extra from tags_files where tag in (%s)'
 			                           ' group by file having count(*) = ?' % items, params):
 				yield row[0]
+
+	def get_extra_for_file(self, path):
+		with self.db:
+			for row in self.db.execute('select extra from tags_files where file = ?', (path,)):
+				return row[0]
