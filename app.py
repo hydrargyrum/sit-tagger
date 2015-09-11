@@ -3,6 +3,9 @@
 # license: WTFPLv2
 
 try:
+	import sip
+	sip.setapi('QString', 2)
+
 	from PyQt4.QtCore import *
 	from PyQt4.QtGui import *
 	Signal = pyqtSignal
@@ -10,6 +13,7 @@ try:
 except ImportError:
 	from PySide.QtCore import *
 	from PySide.QtGui import *
+
 import sys, os
 import time
 
@@ -98,7 +102,7 @@ class Win(QMainWindow):
 
 	@Slot()
 	def browseSelectedDir(self):
-		path = unicode(self.dirModel.filePath(self.dirChooser.currentIndex()))
+		path = self.dirModel.filePath(self.dirChooser.currentIndex())
 		if not path:
 			return
 		files = [os.path.join(path, f) for f in os.listdir(path)]
@@ -135,7 +139,7 @@ def parse_options(args):
 
 if __name__ == '__main__':
 	app = QApplication(sys.argv)
-	opts = parse_options(list(map(unicode, app.arguments())))
+	opts = parse_options(list(app.arguments()))
 	win = Win(opts)
 	win.show()
 	app.exec_()
