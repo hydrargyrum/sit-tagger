@@ -118,6 +118,14 @@ class TagChooser(QListWidget):
 			item.setCheckState(Qt.Unchecked)
 			self.addItem(item)
 
+	def setTags(self, tags):
+		for i in xrange(self.count()):
+			item = self.item(i)
+			if item.text() in tags:
+				item.setCheckState(Qt.Checked)
+			else:
+				item.setCheckState(Qt.Unchecked)
+
 	def selectedTags(self):
 		tags = []
 		for i in xrange(self.count()):
@@ -134,3 +142,19 @@ class TagChooser(QListWidget):
 		res = list(self.db.find_files_by_tags(tags))
 		res.sort()
 		return res
+
+
+class TagChooserDialog(QDialog):
+	def __init__(self, db):
+		QDialog.__init__(self)
+		self.db = db
+
+		self.chooser = TagChooser(db)
+		self.setLayout(QVBoxLayout())
+		self.layout().addWidget(self.chooser)
+
+	def setTags(self, tags):
+		self.chooser.setTags(tags)
+
+	def selectedTags(self):
+		return self.chooser.selectedTags()
