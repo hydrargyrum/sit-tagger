@@ -322,3 +322,6 @@ def put_fail(origname, appname, mtime=None, moreinfo=None):
 	img.save(os.path.join(apppath, md5uri + '.png'), pnginfo=outinfo)
 
 
+if __name__ == '__main__':
+	import sys
+	print gen_image_thumbnail(sys.argv[1], 'large')

@@ -21,18 +21,16 @@ class ThumbnailItem(QListWidgetItem):
 		emptypix.fill(self.listWidget().palette().window().color())
 		self.setIcon(QIcon(emptypix))
 		
-		task = thumbnailmaker.maker.createThumbnailTask(self.path)
-		task.emitter.thumbnailDone.connect(self._thumbnailDone)
-		if task.isFinished:
-			self._thumbnailDone(task.result)
+		thumbnailmaker.maker.addTask(self.path, self._thumbnailDone)
 
-	@Slot(str)
+	@Slot(object)
 	def _thumbnailDone(self, thumbpath):
 		if thumbpath:
 			self.setIcon(QIcon(thumbpath))
 
 	def cancelThumbnail(self):
-		thumbnailmaker.maker.cancelTask(self.path)
+		pass
+		#~ thumbnailmaker.maker.cancelTask(self.path)
 
 	def getPath(self):
 		return self.path
