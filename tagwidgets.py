@@ -31,7 +31,7 @@ class TagEditor(QListWidget):
 		tag = reply[0]
 		if not reply[1]:
 			return
-		self._addItem(tag)
+		self.addItem(self._createItem(tag))
 		#self.tagger.create_tag(tag)
 		#self.setFiles(self.paths)
 
@@ -52,10 +52,9 @@ class TagEditor(QListWidget):
 	def setFile(self, path):
 		return self.setFiles([path])
 
-	def _addItem(self, name):
+	def _createItem(self, name):
 		item = QListWidgetItem(name)
 		item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
-		self.addItem(item)
 		return item
 
 	def setFiles(self, paths):
@@ -64,8 +63,9 @@ class TagEditor(QListWidget):
 
 		tags_per_file = dict((path, self.db.find_tags_by_file(path)) for path in paths)
 		for tag in sorted(self.db.list_tags()):
-			item = self._addItem(tag)
+			item = self._createItem(tag)
 			item.setCheckState(self._state(tag, tags_per_file))
+			self.addItem(item)
 
 	def _state(self, tag, tags_per_file):
 		if not tags_per_file:
