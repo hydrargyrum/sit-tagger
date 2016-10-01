@@ -1,6 +1,13 @@
 
 import sqlite3
 
+
+def iter2list(func):
+	def wrapper(*args, **kwargs):
+		return list(func(*args, **kwargs))
+	return wrapper
+
+
 class Db(object):
 	def __init__(self):
 		self.db = None
@@ -52,16 +59,19 @@ class Db(object):
 				self.db.execute('delete from tags_files where file = ? and tag = ?',
 				                (path, tag))
 
+	@iter2list
 	def list_tags(self):
 		with self.db:
 			for row in self.db.execute('select distinct tag from tags_files'):
 				yield row[0]
 
+	@iter2list
 	def find_tags_by_file(self, path):
 		with self.db:
 			for row in self.db.execute('select tag from tags_files where file = ?', (path,)):
 				yield row[0]
 
+	@iter2list
 	def find_files_by_tags(self, tags):
 		if isinstance(tags, (str, unicode)):
 			tags = [tags]
