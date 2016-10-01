@@ -11,20 +11,23 @@ import thumbnail
 
 
 class ThumbnailMaker(QObject):
+	done = Signal(unicode, unicode)
+
 	def __init__(self):
 		super(ThumbnailMaker, self).__init__()
 		self.queue = []
 		self.running = 0
 
-	def addTask(self, path, cb):
+	def addTask(self, path):
 		if self.running < 5:
-			self._createTask(path, cb)
+			self._createTask(path)
 		else:
-			self.queue.append((path, cb))
+			self.queue.append(path)
 
-	def _createTask(self, path, cb):
+	def _createTask(self, path):
 		proc = QProcess(self)
-		proc.cb = cb
+
+		proc.input = path
 		proc.readyReadStandardOutput.connect(self.hasOutput)
 		proc.finished.connect(self.finished)
 		proc.start('python', ['thumbnail.py', path])
@@ -35,16 +38,17 @@ class ThumbnailMaker(QObject):
 		proc = self.sender()
 		line = proc.readLine()
 		line = unicode(line).strip()
-		proc.cb(line)
+		self.done.emit(proc.input, line)
 
 	@Slot()
 	def finished(self):
-		self.sender().setParent(None)
+		proc = self.sender()
+		proc.deleteLater()
 
 		self.running -= 1
 		if self.queue:
 			p = self.queue.pop()
-			self._createTask(*p)
+			self._createTask(p)
 
 
 class xThumbnailMaker(QThreadPool):
