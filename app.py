@@ -2,20 +2,14 @@
 # base: 2010-02
 # license: WTFPLv2
 
-try:
-	import sip
-	sip.setapi('QString', 2)
-
-	from PyQt4.QtCore import *
-	from PyQt4.QtGui import *
-	Signal = pyqtSignal
-	Slot = pyqtSlot
-except ImportError:
-	from PySide.QtCore import *
-	from PySide.QtGui import *
-
 import sys, os
 import time
+
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+Signal = pyqtSignal
+Slot = pyqtSlot
 
 import dbtag
 from imagewidgets import ImageList
@@ -140,6 +134,9 @@ def parse_options(args):
 	return opts
 
 if __name__ == '__main__':
+	if sys.excepthook is sys.__excepthook__:
+		sys.excepthook = lambda *args: sys.__excepthook__(*args)
+
 	app = QApplication(sys.argv)
 	opts = parse_options(list(app.arguments()))
 	win = Win(opts)

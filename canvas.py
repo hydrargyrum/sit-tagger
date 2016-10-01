@@ -1,14 +1,11 @@
 
-try:
-	from PyQt4.QtCore import *
-	from PyQt4.QtGui import *
-	Signal = pyqtSignal
-	Slot = pyqtSlot
-except ImportError:
-	from PySide.QtCore import *
-	from PySide.QtGui import *
-
 import math
+
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+Signal = pyqtSignal
+Slot = pyqtSlot
 
 
 MODE_MOVE = 0
