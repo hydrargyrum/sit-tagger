@@ -24,11 +24,11 @@ class Db(object):
 
 	def remove_file(self, path):
 		with self.db:
-			self.db.execute('delete from tags_files where file = ?', path)
+			self.db.execute('delete from tags_files where file = ?', (path,))
 
 	def remove_tag(self, name):
 		with self.db:
-			self.db.execute('delete from tags_files where tag = ?', name)
+			self.db.execute('delete from tags_files where tag = ?', (name,))
 
 	def rename_tag(self, old, new):
 		with self.db:
@@ -59,7 +59,7 @@ class Db(object):
 
 	def find_tags_by_file(self, path):
 		with self.db:
-			for row in self.db.execute('select tag from tags_files where file = ?', path):
+			for row in self.db.execute('select tag from tags_files where file = ?', (path,)):
 				yield row[0]
 
 	def find_files_by_tags(self, tags):
