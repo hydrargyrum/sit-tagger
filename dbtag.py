@@ -24,8 +24,8 @@ class Db(object):
 
 	def create_tables(self):
 		c = self.db.cursor()
-		c.execute('create table if not exists tags_files (file, tag, extra,'
-		          ' constraint pk_tf primary key(file, tag))')
+		c.execute('create table if not exists tags_files (file, tag, start, end,'
+		          ' constraint pk_tf primary key(file, tag, start, end))')
 		c.execute('create index if not exists idx_tags on tags_files (tag)')
 		c.execute('create index if not exists idx_files on tags_files (file)')
 
@@ -41,14 +41,14 @@ class Db(object):
 		with self.db:
 			self.db.execute('update tags_files set tag = ? where tag = ?', (new, old))
 
-	def tag_file(self, path, tags, extra=None):
+	def tag_file(self, path, tags, start=None, end=None):
 		if isinstance(tags, (str, unicode)):
 			tags = [tags]
 
-		data = [(path, tag, extra) for tag in tags]
 		with self.db:
-			self.db.executemany('insert or replace into tags_files (file, tag, extra) values (?, ?, ?)',
-			                    data)
+			for tag in tags:
+				self.db.execute('insert or replace into tags_files (file, tag, start, end) values (?, ?, ?, ?)',
+				                (path, tag, start, end))
 
 	def untag_file(self, path, tags):
 		if isinstance(tags, (str, unicode)):
@@ -68,7 +68,7 @@ class Db(object):
 	@iter2list
 	def find_tags_by_file(self, path):
 		with self.db:
-			for row in self.db.execute('select tag from tags_files where file = ?', (path,)):
+			for row in self.db.execute('select distinct tag from tags_files where file = ?', (path,)):
 				yield row[0]
 
 	@iter2list
@@ -78,11 +78,13 @@ class Db(object):
 		items = ','.join('?' * len(tags))
 		params = list(tags) + [len(tags)]
 		with self.db:
-			for row in self.db.execute('select file, extra from tags_files where tag in (%s)'
+			for row in self.db.execute('select file from tags_files where tag in (%s)'
 			                           ' group by file having count(*) = ?' % items, params):
 				yield row[0]
 
-	def get_extra_for_file(self, path):
+	@iter2list
+	def get_extras_for_file(self, path, tag):
 		with self.db:
-			for row in self.db.execute('select extra from tags_files where file = ?', (path,)):
-				return row[0]
+			for row in self.db.execute('select start, end from tags_files where file = ? and tag = ?',
+			                           (path, tag)):
+				yield row[0], row[1]
