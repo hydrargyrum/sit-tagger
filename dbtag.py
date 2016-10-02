@@ -15,7 +15,7 @@ class Db(object):
 
 	def open(self, path):
 		self.db_path = path
-		self.db = sqlite3.connect(path)
+		self.db = sqlite3.connect(path, isolation_level=None)
 
 	def close(self):
 		self.db_path = None
@@ -29,47 +29,46 @@ class Db(object):
 		c.execute('create index if not exists idx_tags on tags_files (tag)')
 		c.execute('create index if not exists idx_files on tags_files (file)')
 
+	def __enter__(self, *args):
+		return self.db.__enter__(*args)
+
+	def __exit__(self, *args):
+		return self.db.__exit__(*args)
+
 	def remove_file(self, path):
-		with self.db:
-			self.db.execute('delete from tags_files where file = ?', (path,))
+		self.db.execute('delete from tags_files where file = ?', (path,))
 
 	def remove_tag(self, name):
-		with self.db:
-			self.db.execute('delete from tags_files where tag = ?', (name,))
+		self.db.execute('delete from tags_files where tag = ?', (name,))
 
 	def rename_tag(self, old, new):
-		with self.db:
-			self.db.execute('update tags_files set tag = ? where tag = ?', (new, old))
+		self.db.execute('update tags_files set tag = ? where tag = ?', (new, old))
 
 	def tag_file(self, path, tags, start=None, end=None):
 		if isinstance(tags, (str, unicode)):
 			tags = [tags]
 
-		with self.db:
-			for tag in tags:
-				self.db.execute('insert or replace into tags_files (file, tag, start, end) values (?, ?, ?, ?)',
-				                (path, tag, start, end))
+		for tag in tags:
+			self.db.execute('insert or replace into tags_files (file, tag, start, end) values (?, ?, ?, ?)',
+					(path, tag, start, end))
 
 	def untag_file(self, path, tags):
 		if isinstance(tags, (str, unicode)):
 			tags = [tags]
 
-		with self.db:
-			for tag in tags:
-				self.db.execute('delete from tags_files where file = ? and tag = ?',
-				                (path, tag))
+		for tag in tags:
+			self.db.execute('delete from tags_files where file = ? and tag = ?',
+					(path, tag))
 
 	@iter2list
 	def list_tags(self):
-		with self.db:
-			for row in self.db.execute('select distinct tag from tags_files'):
-				yield row[0]
+		for row in self.db.execute('select distinct tag from tags_files'):
+			yield row[0]
 
 	@iter2list
 	def find_tags_by_file(self, path):
-		with self.db:
-			for row in self.db.execute('select distinct tag from tags_files where file = ?', (path,)):
-				yield row[0]
+		for row in self.db.execute('select distinct tag from tags_files where file = ?', (path,)):
+			yield row[0]
 
 	@iter2list
 	def find_files_by_tags(self, tags):
@@ -77,14 +76,12 @@ class Db(object):
 			tags = [tags]
 		items = ','.join('?' * len(tags))
 		params = list(tags) + [len(tags)]
-		with self.db:
-			for row in self.db.execute('select file from tags_files where tag in (%s)'
-			                           ' group by file having count(*) = ?' % items, params):
-				yield row[0]
+		for row in self.db.execute('select file from tags_files where tag in (%s)'
+					   ' group by file having count(*) = ?' % items, params):
+			yield row[0]
 
 	@iter2list
 	def get_extras_for_file(self, path, tag):
-		with self.db:
-			for row in self.db.execute('select start, end from tags_files where file = ? and tag = ?',
-			                           (path, tag)):
-				yield row[0], row[1]
+		for row in self.db.execute('select start, end from tags_files where file = ? and tag = ?',
+					   (path, tag)):
+			yield row[0], row[1]
