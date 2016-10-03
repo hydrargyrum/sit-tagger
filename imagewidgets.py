@@ -1,11 +1,9 @@
 
 import os
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-Signal = pyqtSignal
-Slot = pyqtSlot
+from PyQt5.QtCore import QSize, Qt, pyqtSlot as Slot
+from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QListView
 
 import thumbnailmaker
 
@@ -15,11 +13,11 @@ class ThumbnailItem(QListWidgetItem):
 		super(ThumbnailItem, self).__init__(os.path.basename(path), widget)
 		self.path = path
 		self.setData(Qt.UserRole, self.path)
-		
+
 		emptypix = QPixmap(QSize(256, 256))
 		emptypix.fill(self.listWidget().palette().window().color())
 		self.setIcon(QIcon(emptypix))
-		
+
 		thumbnailmaker.maker.addTask(self.path)
 
 	def cancelThumbnail(self):
@@ -61,7 +59,7 @@ class ImageList(QListWidget):
 	def setFiles(self, files):
 		self.removeItems()
 		self.items = {}
-		
+
 		for f in files:
 			item = ThumbnailItem(f, self)
 			self.items[f] = item

@@ -2,14 +2,11 @@
 # base: 2010-02
 # license: WTFPLv2
 
-import sys, os
-import time
+import sys
+import os
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-Signal = pyqtSignal
-Slot = pyqtSlot
+from PyQt5.QtCore import QDir, Qt, pyqtSlot as Slot
+from PyQt5.QtWidgets import QMainWindow, QTreeView, QListWidgetItem, QSplitter, QApplication, QAbstractItemView, QTabWidget, QFileSystemModel
 
 import dbtag
 from imagewidgets import ImageList
@@ -17,7 +14,7 @@ from tagwidgets import TagEditor, TagChooser
 from fullscreenviewer import ImageViewer
 
 # qsplitter = a | b
-# a = qtabw 
+# a = qtabw
 # a / tagchooser
 # a / qtreeview
 # b = c - d
@@ -124,6 +121,7 @@ class Win(QMainWindow):
 def xdg_config():
 	return os.getenv('XDG_CONFIG_HOME', os.getenv('HOME', '/') + '/.config')
 
+
 def parse_options(args):
 	import optparse
 	parser = optparse.OptionParser()
@@ -132,6 +130,7 @@ def parse_options(args):
 	parser.set_defaults(filespath='/', db=xdg_config() + '/sit-tagger.sqlite')
 	opts, _ = parser.parse_args(args)
 	return opts
+
 
 if __name__ == '__main__':
 	if sys.excepthook is sys.__excepthook__:

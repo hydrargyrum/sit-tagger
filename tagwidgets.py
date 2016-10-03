@@ -1,11 +1,6 @@
 
-import os
-
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-Signal = pyqtSignal
-Slot = pyqtSlot
+from PyQt5.QtCore import Qt, pyqtSignal as Signal, pyqtSlot as Slot
+from PyQt5.QtWidgets import QListWidget, QInputDialog, QVBoxLayout, QListWidgetItem, QAction, QDialog
 
 
 class TagEditor(QListWidget):

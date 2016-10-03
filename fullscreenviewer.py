@@ -1,9 +1,8 @@
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-Signal = pyqtSignal
-Slot = pyqtSlot
+from PyQt5.QtCore import Qt, QTimer, QEvent, pyqtSignal as Signal, pyqtSlot as Slot
+from PyQt5.QtGui import QKeySequence, QPalette, QPixmap
+from PyQt5.QtWidgets import QMainWindow, QListWidget, QSizePolicy, QScrollArea, QDockWidget, QToolBar, QFrame, QLabel
+
 
 from tagwidgets import TagEditor
 
@@ -27,11 +26,11 @@ class AutoHideDock(QDockWidget, AutoHideMixin):
 class ImageViewer(QMainWindow):
 	def __init__(self, db):
 		super(ImageViewer, self).__init__()
-		
+
 		self.db = db
 		self.currentIndex = -1
 		self.files = []
-		
+
 		self._init_widgets()
 
 	def _init_widgets(self):
@@ -84,7 +83,7 @@ class ImageViewer(QMainWindow):
 		self.qtagwl.setFrameShape(QFrame.NoFrame)
 		self.qtagwl.setStyleSheet('QListWidget{background-color: rgba(255,255,255,200);}\n *{background-color:rgba(0,255,255,255);}')
 		self.qtagwl.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
-		
+
 		self.qthtimer = QTimer()
 		self.connect(self.qthtimer, SIGNAL('timeout()'), self.qtaghide)
 		'''
@@ -125,7 +124,7 @@ class ImageViewer(QMainWindow):
 	def spawn(self, files, currentFile):
 		self.files = files
 		self.currentIndex = files.index(currentFile)
-		
+
 		self.setFile(currentFile)
 		if self.isHidden():
 			#~ self.setWindowState(self.windowState() | Qt.WindowMaximized)
@@ -135,7 +134,7 @@ class ImageViewer(QMainWindow):
 			#~ self.showMaximized()
 		else:
 			self.show()
-	
+
 	def setFile(self, file):
 		self.tageditor.setFile(file)
 		self.scrollview.setFile(file)
@@ -198,10 +197,10 @@ class ImageViewerCenter(QScrollArea):
 	def mousePressEvent(self, ev):
 		self.moving = (ev.pos().x(), ev.pos().y())
 		self.movingScrolls = (self.horizontalScrollBar().value(), self.verticalScrollBar().value())
-		
+
 	def mouseReleaseEvent(self, ev):
 		self.moving = False
-		
+
 	def mouseMoveEvent(self, ev):
 		if self.moving:
 			p = ev.pos()
@@ -226,11 +225,11 @@ class ImageViewerCenter(QScrollArea):
 		super(ImageViewerCenter, self).resizeEvent(ev)
 		if self.zoomMode != ZOOM_FACTOR:
 			self._rebuildZoom()
-	
+
 	def keyPressEvent_(self, ev):
 		if ev.key() not in (Qt.Key_PageUp, Qt.Key_PageDown):
 			QScrollArea.keyPressEvent(self, ev)
-	
+
 	def keyReleaseEvent_(self, ev):
 		if ev.key() == Qt.Key_PageUp:
 			self.imageviewer.prevImage_s()
@@ -278,4 +277,3 @@ class ImageViewerCenter(QScrollArea):
 
 	def _setPixmap(self, pixmap):
 		self.widget().setPixmap(pixmap)
-	
