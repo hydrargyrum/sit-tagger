@@ -22,13 +22,10 @@ class TagEditor(QListWidget):
 
 	@Slot()
 	def _createTag(self):
-		reply = QInputDialog.getText(self, 'Enter a tag name', 'New tag')
-		tag = reply[0]
-		if not reply[1]:
+		tag, ok = QInputDialog.getText(self, 'Enter a tag name', 'New tag')
+		if not ok:
 			return
 		self.addItem(self._createItem(tag))
-		#self.tagger.create_tag(tag)
-		#self.setFiles(self.paths)
 
 	@Slot()
 	def _renameTag(self):
@@ -37,9 +34,8 @@ class TagEditor(QListWidget):
 			return
 		old_tag = item.text()
 
-		qreply = QInputDialog.getText(self, 'Enter a tag name', 'New tag')
-		new_tag = qreply[0]
-		if not qreply[1]:
+		new_tag, ok = QInputDialog.getText(self, 'Enter a tag name', 'New tag')
+		if not ok:
 			return
 		self.db.rename_tag(old_tag, new_tag)
 		self.setFiles(self.paths)
