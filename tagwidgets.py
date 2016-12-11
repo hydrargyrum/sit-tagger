@@ -1,11 +1,15 @@
 
-from PyQt5.QtCore import Qt, pyqtSignal as Signal, pyqtSlot as Slot
-from PyQt5.QtWidgets import QListWidget, QInputDialog, QVBoxLayout, QListWidgetItem, QAction, QDialog
+from PyQt5.QtCore import Qt, pyqtSignal as Signal, pyqtSlot as Slot, QRegExp, QSortFilterProxyModel
+from PyQt5.QtGui import QStandardItem, QStandardItemModel
+from PyQt5.QtWidgets import QListWidget, QInputDialog, QVBoxLayout, QListWidgetItem, QAction, QDialog, QListView
 
 
-class TagEditor(QListWidget):
+class TagEditor(QListView):
 	def __init__(self, db):
 		super(TagEditor, self).__init__()
+
+		self.data = QStandardItemModel()
+		self.setModel(self.data)
 
 		self.setContextMenuPolicy(Qt.ActionsContextMenu)
 		act = QAction('&Create tag', self)
@@ -16,7 +20,7 @@ class TagEditor(QListWidget):
 		act.triggered.connect(self._renameTag)
 		self.addAction(act)
 
-		self.itemChanged.connect(self._tagStateChanged)
+		self.data.itemChanged.connect(self._tagStateChanged)
 
 		self.db = db
 
@@ -25,7 +29,7 @@ class TagEditor(QListWidget):
 		tag, ok = QInputDialog.getText(self, 'Enter a tag name', 'New tag')
 		if not ok:
 			return
-		self.addItem(self._createItem(tag))
+		self.data.appendRow(self._createItem(tag))
 
 	@Slot()
 	def _renameTag(self):
@@ -44,19 +48,20 @@ class TagEditor(QListWidget):
 		return self.setFiles([path])
 
 	def _createItem(self, name):
-		item = QListWidgetItem(name)
+		item = QStandardItem(name)
 		item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
+		item.setCheckState(Qt.Unchecked)
 		return item
 
 	def setFiles(self, paths):
-		self.clear()
+		self.data.clear()
 		self.paths = paths
 
 		tags_per_file = dict((path, self.db.find_tags_by_file(path)) for path in paths)
 		for tag in sorted(self.db.list_tags()):
 			item = self._createItem(tag)
 			item.setCheckState(self._state(tag, tags_per_file))
-			self.addItem(item)
+			self.data.appendRow(item)
 
 	def _state(self, tag, tags_per_file):
 		if not tags_per_file:
@@ -83,7 +88,7 @@ class TagEditor(QListWidget):
 		else:
 			return Qt.Unchecked
 
-	@Slot(QListWidgetItem)
+	@Slot('QStandardItem*')
 	def _tagStateChanged(self, item):
 		if item.checkState() == Qt.Unchecked:
 			for path in self.paths:
@@ -93,23 +98,30 @@ class TagEditor(QListWidget):
 				self.db.tag_file(path, [item.text()])
 
 
-class TagChooser(QListWidget):
+class TagChooser(QListView):
 	changed = Signal()
 
 	def __init__(self, db):
 		super(TagChooser,self).__init__()
 		self.db = db
 
-		self.itemChanged.connect(self.changed)
+		self.filter = u''
+
+		self.data = QStandardItemModel()
+		self.proxy = QSortFilterProxyModel()
+		self.proxy.setSourceModel(self.data)
+		self.setModel(self.proxy)
+
+		self.data.itemChanged.connect(self.changed)
 		for t in sorted(self.db.list_tags()):
-			item = QListWidgetItem(t)
+			item = QStandardItem(t)
 			item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
 			item.setCheckState(Qt.Unchecked)
-			self.addItem(item)
+			self.data.appendRow(item)
 
 	def setTags(self, tags):
-		for i in xrange(self.count()):
-			item = self.item(i)
+		for i in xrange(self.data.rowCount()):
+			item = self.data.item(i)
 			if item.text() in tags:
 				item.setCheckState(Qt.Checked)
 			else:
@@ -117,8 +129,8 @@ class TagChooser(QListWidget):
 
 	def selectedTags(self):
 		tags = []
-		for i in xrange(self.count()):
-			item = self.item(i)
+		for i in xrange(self.data.rowCount()):
+			item = self.data.item(i)
 			if item.checkState() == Qt.Checked:
 				tags.append(item.text())
 		return tags
