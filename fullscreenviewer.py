@@ -1,6 +1,6 @@
 
 from PyQt5.QtCore import Qt, QTimer, QEvent, pyqtSignal as Signal, pyqtSlot as Slot
-from PyQt5.QtGui import QKeySequence, QPalette, QPixmap
+from PyQt5.QtGui import QKeySequence, QPalette, QPixmap, QMovie
 from PyQt5.QtWidgets import QMainWindow, QListWidget, QSizePolicy, QScrollArea, QDockWidget, QToolBar, QFrame, QLabel
 
 
@@ -193,6 +193,9 @@ class ImageViewerCenter(QScrollArea):
 		self.leftZone = False
 		self.topZone = False
 
+		self.file = None
+		self.movie = None
+
 	### events
 	def mousePressEvent(self, ev):
 		self.moving = (ev.pos().x(), ev.pos().y())
@@ -252,12 +255,21 @@ class ImageViewerCenter(QScrollArea):
 
 	def setFile(self, file):
 		self.file = file
-		self.originalPixmap = QPixmap(file)
-		#~ self.widget().setPixmap()
-		self._rebuildZoom()
+		if file.lower().endswith('.gif'):
+			self.movie = QMovie(file)
+			self.widget().setMovie(self.movie)
+			self.movie.finished.connect(self.movie.start)
+			self.movie.start()
+		else:
+			self.movie = None
+			self.originalPixmap = QPixmap(file)
+			self._rebuildZoom()
 
 	###
 	def _rebuildZoom(self):
+		if self.movie:
+			return
+
 		if self.zoomMode == ZOOM_FACTOR:
 			if self.zoomFactor == 1:
 				self._setPixmap(self.originalPixmap)
