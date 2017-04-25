@@ -22,7 +22,7 @@ class ThumbnailMaker(QObject):
 		proc.input = path
 		proc.readyReadStandardOutput.connect(self.hasOutput)
 		proc.finished.connect(self.finished)
-		proc.start('python', ['thumbnail.py', path])
+		proc.start('python', ['-m', 'vignette', path])
 		self.running += 1
 
 	@Slot()
