@@ -1,6 +1,6 @@
 
 from PyQt5.QtCore import Qt, QTimer, QEvent, pyqtSignal as Signal, pyqtSlot as Slot
-from PyQt5.QtGui import QKeySequence, QPalette, QPixmap, QMovie
+from PyQt5.QtGui import QKeySequence, QPalette, QPixmap, QMovie, QIcon
 from PyQt5.QtWidgets import QMainWindow, QListWidget, QSizePolicy, QScrollArea, QDockWidget, QToolBar, QFrame, QLabel
 
 
@@ -38,25 +38,27 @@ class ImageViewer(QMainWindow):
 		self.toolbar = QToolBar()
 		self.addToolBar(self.toolbar)
 		self.toolbar.hide()
-		self.toolbar.addAction('Z 1:1').triggered.connect(self.doNormalZoom)
-		self.toolbar.addAction('Z Fit').triggered.connect(self.doFitAllZoom)
-		self.toolbar.addAction('Z FitExp').triggered.connect(self.doFitCutZoom)
-		self.toolbar.addAction('Z x1.5').triggered.connect(self.zoom)
-		self.toolbar.addAction('Z /1.5').triggered.connect(self.unzoom)
 
-		self.toolbar.addAction('Copy tags').triggered.connect(self.copyPreviousTags)
-
-		self.fullscreenAction = self.toolbar.addAction('Fullscreen')
-		self.fullscreenAction.setCheckable(True)
-		self.fullscreenAction.toggled.connect(self.setFullscreen)
-
-		act = self.toolbar.addAction('Prev')
+		act = self.toolbar.addAction(QIcon.fromTheme('go-previous'), 'Previous')
 		act.setShortcut(QKeySequence(Qt.Key_Backspace))
 		act.triggered.connect(self.showPreviousFile)
-		act = self.toolbar.addAction('Next')
+		act = self.toolbar.addAction(QIcon.fromTheme('go-next'), 'Next')
 		act.setShortcut(QKeySequence(Qt.Key_Space))
 		act.triggered.connect(self.showNextFile)
-		#~ act.setShortcutContext(Qt.WidgetWithChildrenShortcut)
+		self.toolbar.addSeparator()
+
+		self.toolbar.addAction(QIcon.fromTheme('zoom-original'), 'Z 1:1').triggered.connect(self.doNormalZoom)
+		self.toolbar.addAction(QIcon.fromTheme('zoom-fit-best'), 'Z Fit').triggered.connect(self.doFitAllZoom)
+		self.toolbar.addAction(QIcon.fromTheme('zoom-fit-best'), 'Z FitExp').triggered.connect(self.doFitCutZoom)
+		self.toolbar.addAction(QIcon.fromTheme('zoom-in'), 'Z x1.5').triggered.connect(self.zoom)
+		self.toolbar.addAction(QIcon.fromTheme('zoom-out'), 'Z /1.5').triggered.connect(self.unzoom)
+
+		self.fullscreenAction = self.toolbar.addAction(QIcon.fromTheme('view-fullscreen'), 'Fullscreen')
+		self.fullscreenAction.setCheckable(True)
+		self.fullscreenAction.toggled.connect(self.setFullscreen)
+		self.toolbar.addSeparator()
+
+		self.toolbar.addAction('Copy tags').triggered.connect(self.copyPreviousTags)
 
 		self.tageditor = TagEditor(self.db)
 		self.docktagger = AutoHideDock()
