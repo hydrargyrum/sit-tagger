@@ -3,7 +3,7 @@ from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, QProce
 
 
 class ThumbnailMaker(QObject):
-	done = Signal(unicode, unicode)
+	done = Signal(str, str)
 
 	def __init__(self, *args, **kwargs):
 		super(ThumbnailMaker, self).__init__(*args, **kwargs)
@@ -29,7 +29,7 @@ class ThumbnailMaker(QObject):
 	def hasOutput(self):
 		proc = self.sender()
 		line = proc.readLine()
-		line = unicode(line).strip()
+		line = bytes(line).decode('utf-8').strip()
 		self.done.emit(proc.input, line)
 
 	@Slot()

@@ -45,7 +45,7 @@ class Db(object):
 		self.db.execute('update tags_files set tag = ? where tag = ?', (new, old))
 
 	def tag_file(self, path, tags, start=None, end=None):
-		if isinstance(tags, (str, unicode)):
+		if isinstance(tags, str):
 			tags = [tags]
 
 		for tag in tags:
@@ -53,7 +53,7 @@ class Db(object):
 					(path, tag, start, end))
 
 	def untag_file(self, path, tags):
-		if isinstance(tags, (str, unicode)):
+		if isinstance(tags, str):
 			tags = [tags]
 
 		for tag in tags:
@@ -72,7 +72,7 @@ class Db(object):
 
 	@iter2list
 	def find_files_by_tags(self, tags):
-		if isinstance(tags, (str, unicode)):
+		if isinstance(tags, str):
 			tags = [tags]
 		items = ','.join('?' * len(tags))
 		params = list(tags) + [len(tags)]

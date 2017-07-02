@@ -120,7 +120,7 @@ class TagChooser(QListView):
 			self.data.appendRow(item)
 
 	def setTags(self, tags):
-		for i in xrange(self.data.rowCount()):
+		for i in range(self.data.rowCount()):
 			item = self.data.item(i)
 			if item.text() in tags:
 				item.setCheckState(Qt.Checked)
@@ -129,7 +129,7 @@ class TagChooser(QListView):
 
 	def selectedTags(self):
 		tags = []
-		for i in xrange(self.data.rowCount()):
+		for i in range(self.data.rowCount()):
 			item = self.data.item(i)
 			if item.checkState() == Qt.Checked:
 				tags.append(item.text())

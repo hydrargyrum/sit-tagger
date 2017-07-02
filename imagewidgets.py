@@ -44,7 +44,7 @@ class ImageList(QListWidget):
 
 		thumbnailmaker.maker.done.connect(self._thumbnailDone)
 
-	@Slot(unicode, unicode)
+	@Slot(str, str)
 	def _thumbnailDone(self, origpath, thumbpath):
 		if origpath not in self.items:
 			return
@@ -52,7 +52,7 @@ class ImageList(QListWidget):
 			self.items[origpath].setIcon(QIcon(thumbpath))
 
 	def removeItems(self):
-		for i in xrange(self.count()):
+		for i in range(self.count()):
 			self.item(i).cancelThumbnail()
 		self.clear()
 
@@ -65,4 +65,4 @@ class ImageList(QListWidget):
 			self.items[f] = item
 
 	def getFiles(self):
-		return [self.item(i).getPath() for i in xrange(self.count())]
+		return [self.item(i).getPath() for i in range(self.count())]

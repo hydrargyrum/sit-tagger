@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # base: 2010-02
 # license: WTFPLv2
 
