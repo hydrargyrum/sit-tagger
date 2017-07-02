@@ -5,7 +5,7 @@ from PyQt5.QtCore import QSize, Qt, pyqtSlot as Slot
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QListView
 
-import thumbnailmaker
+from . import thumbnailmaker
 
 
 class ThumbnailItem(QListWidgetItem):

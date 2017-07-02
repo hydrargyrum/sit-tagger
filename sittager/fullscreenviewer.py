@@ -4,7 +4,7 @@ from PyQt5.QtGui import QKeySequence, QPalette, QPixmap, QMovie, QIcon
 from PyQt5.QtWidgets import QMainWindow, QListWidget, QSizePolicy, QScrollArea, QDockWidget, QToolBar, QFrame, QLabel
 
 
-from tagwidgets import TagEditor
+from .tagwidgets import TagEditor
 
 
 ZOOM_FACTOR = 0

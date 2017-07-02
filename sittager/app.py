@@ -8,10 +8,10 @@ import os
 from PyQt5.QtCore import QDir, Qt, pyqtSlot as Slot
 from PyQt5.QtWidgets import QMainWindow, QTreeView, QListWidgetItem, QSplitter, QApplication, QAbstractItemView, QTabWidget, QFileSystemModel
 
-import dbtag
-from imagewidgets import ImageList
-from tagwidgets import TagEditor, TagChooser
-from fullscreenviewer import ImageViewer
+from . import dbtag
+from .imagewidgets import ImageList
+from .tagwidgets import TagEditor, TagChooser
+from .fullscreenviewer import ImageViewer
 
 # qsplitter = a | b
 # a = qtabw
