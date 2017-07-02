@@ -57,7 +57,7 @@ class Win(QMainWindow):
 		bigsplitter.addWidget(leftsplitter)
 		bigsplitter.addWidget(self.imageList)
 
-		self.viewer = ImageViewer(self.db)
+		self.viewer = None
 
 	def _init_more(self):
 		self.setWindowTitle('Tags4')
@@ -83,7 +83,8 @@ class Win(QMainWindow):
 		self.tagEditor.setFiles(paths)
 
 	def spawnViewer(self, files, currentFile):
-		self.viewer.spawn(files, currentFile)
+		viewer = ImageViewer(self.db, parent=self)
+		viewer.spawn(files, currentFile)
 
 	@Slot()
 	def _editTagsItems(self):
