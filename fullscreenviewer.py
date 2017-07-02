@@ -24,8 +24,8 @@ class AutoHideDock(QDockWidget, AutoHideMixin):
 
 
 class ImageViewer(QMainWindow):
-	def __init__(self, db):
-		super(ImageViewer, self).__init__()
+	def __init__(self, db, *args, **kwargs):
+		super(ImageViewer, self).__init__(*args, **kwargs)
 
 		self.db = db
 		self.currentIndex = -1
@@ -172,8 +172,8 @@ class ImageViewerCenter(QScrollArea):
 	leftZoneEntered = Signal()
 	leftZoneLeft = Signal()
 
-	def __init__(self):
-		QScrollArea.__init__(self)
+	def __init__(self, *args, **kwargs):
+		super(ImageViewerCenter, self).__init__(*args, **kwargs)
 		self.zoomMode = ZOOM_FACTOR
 		self.zoomFactor = 1
 		self.moving = None

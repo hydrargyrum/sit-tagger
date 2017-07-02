@@ -29,8 +29,8 @@ class ThumbnailItem(QListWidgetItem):
 
 
 class ImageList(QListWidget):
-	def __init__(self):
-		super(ImageList, self).__init__()
+	def __init__(self, *args, **kwargs):
+		super(ImageList, self).__init__(*args, **kwargs)
 		self.items = {}
 
 		self.setViewMode(QListView.IconMode)

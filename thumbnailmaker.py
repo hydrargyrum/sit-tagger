@@ -5,8 +5,8 @@ from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, QProce
 class ThumbnailMaker(QObject):
 	done = Signal(unicode, unicode)
 
-	def __init__(self):
-		super(ThumbnailMaker, self).__init__()
+	def __init__(self, *args, **kwargs):
+		super(ThumbnailMaker, self).__init__(*args, **kwargs)
 		self.queue = []
 		self.running = 0
 
