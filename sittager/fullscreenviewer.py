@@ -1,8 +1,7 @@
 
-from PyQt5.QtCore import Qt, QTimer, QEvent, pyqtSignal as Signal, pyqtSlot as Slot
+from PyQt5.QtCore import Qt, QEvent, pyqtSignal as Signal, pyqtSlot as Slot
 from PyQt5.QtGui import QKeySequence, QPalette, QPixmap, QMovie, QIcon
-from PyQt5.QtWidgets import QMainWindow, QListWidget, QSizePolicy, QScrollArea, QDockWidget, QToolBar, QFrame, QLabel
-
+from PyQt5.QtWidgets import QMainWindow, QScrollArea, QDockWidget, QToolBar, QLabel
 
 from .tagwidgets import TagEditor
 

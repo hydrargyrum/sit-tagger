@@ -1,9 +1,9 @@
 
 import math
 
-from PyQt5.QtCore import Qt, pyqtSignal as Signal, pyqtSlot as Slot
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmapCache, QTransform, QPixmap
-from PyQt5.QtWidgets import QGraphicsView, QGraphicsItem, QGraphicsScene, QGraphicsProxyWidget, QGraphicsPixmapItem
+from PyQt5.QtWidgets import QGraphicsView, QGraphicsItem, QGraphicsScene, QGraphicsPixmapItem
 
 
 MODE_MOVE = 0

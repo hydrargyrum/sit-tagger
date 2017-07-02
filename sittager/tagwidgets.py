@@ -1,7 +1,7 @@
 
-from PyQt5.QtCore import Qt, pyqtSignal as Signal, pyqtSlot as Slot, QRegExp, QSortFilterProxyModel
+from PyQt5.QtCore import Qt, pyqtSignal as Signal, pyqtSlot as Slot, QSortFilterProxyModel
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import QListWidget, QInputDialog, QVBoxLayout, QListWidgetItem, QAction, QDialog, QListView
+from PyQt5.QtWidgets import QInputDialog, QVBoxLayout, QAction, QDialog, QListView
 
 
 class TagEditor(QListView):
