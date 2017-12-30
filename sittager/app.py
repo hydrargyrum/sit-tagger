@@ -100,7 +100,7 @@ class Win(QMainWindow):
 		if not path:
 			return
 		files = [os.path.join(path, f) for f in os.listdir(path)]
-		files = filter(os.path.isfile, files)
+		files = [f for f in files if os.path.isfile(f)]
 		files.sort()
 		self.imageList.setFiles(files)
 
