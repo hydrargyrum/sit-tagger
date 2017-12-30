@@ -133,7 +133,7 @@ def parse_options(args):
 	return opts
 
 
-if __name__ == '__main__':
+def main():
 	if sys.excepthook is sys.__excepthook__:
 		sys.excepthook = lambda *args: sys.__excepthook__(*args)
 
@@ -142,3 +142,7 @@ if __name__ == '__main__':
 	win = Win(opts)
 	win.show()
 	app.exec_()
+
+
+if __name__ == '__main__':
+	main()
