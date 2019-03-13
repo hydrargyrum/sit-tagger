@@ -17,6 +17,13 @@ def build_parser():
 
 
 def main():
+	def do_query(args, items):
+		if not items:
+			parser.error('at least one tag should be given')
+
+		for file in db.find_files_by_tags(items):
+			print(file)
+
 	def do_show(args, items):
 		if not items:
 			parser.error('at least one file should be given')
@@ -53,6 +60,7 @@ def main():
 	cmds = {
 		'set': do_set,
 		'show': do_show,
+		'query': do_query,
 	}
 
 	parser = build_parser()
