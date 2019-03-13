@@ -17,44 +17,54 @@ def build_parser():
 
 
 def main():
+	def do_show(args, items):
+		if not items:
+			parser.error('at least one file should be given')
+
+		for file in items:
+			file = os.path.abspath(file)
+			print(file, '=', '[%s]' % ', '.join(db.find_tags_by_file(file)))
+
+	def do_set(args, items):
+		to_add = set()
+		to_del = set()
+		files = []
+		for item in items:
+			if item.startswith('-'):
+				to_del.add(item[1:])
+			elif item.startswith('+'):
+				to_add.add(item[1:])
+			else:
+				files.append(item)
+
+		if not files:
+			parser.error('at least one file should be provided')
+		elif not to_add and not to_del:
+			parser.error('at least one tag should be added or removed')
+
+		for file in files:
+			file = os.path.abspath(file)
+
+			for tag in to_add:
+				db.tag_file(file, tag)
+			for tag in to_del:
+				db.untag_file(file, tag)
+
+	cmds = {
+		'set': do_set,
+		'show': do_show,
+	}
+
 	parser = build_parser()
-	parser.add_argument('-s', '--show', action='store_true')
+	parser.add_argument('subcommand', choices=cmds.keys())
 	args, items = parser.parse_known_args()
-
-	to_add = set()
-	to_del = set()
-	files = []
-	for item in items:
-		if item.startswith('-'):
-			to_del.add(item[1:])
-		elif item.startswith('+'):
-			to_add.add(item[1:])
-		else:
-			files.append(item)
-
-	if not files:
-		parser.error('at least one file should be provided')
-	elif not to_add and not to_del and not args.show:
-		parser.error('at least one tag should be added or removed')
-	elif args.show and (to_add or to_del):
-		parser.error('--show is exclusive with adding/removing tags')
 
 	db = Db()
 	db.open(args.db)
 	try:
 		with db:
 			db.create_tables()
-
-			for file in files:
-				file = os.path.abspath(file)
-
-				for tag in to_add:
-					db.tag_file(file, tag)
-				for tag in to_del:
-					db.untag_file(file, tag)
-
-				if args.show:
-					print(file, '=', '[%s]' % ', '.join(db.find_tags_by_file(file)))
+			cmds[args.subcommand](args, items)
 	finally:
 		db.close()
 
