@@ -125,10 +125,13 @@ def xdg_config():
 
 def parse_options(args):
 	import optparse
+
+	default_db = os.getenv('SITTAGGER_DATABASE') or xdg_config() + '/sit-tagger.sqlite'
+
 	parser = optparse.OptionParser()
 	parser.add_option('-d', '--database', metavar='FILE', dest='db')
 	parser.add_option('-p', '--path', dest='filespath')
-	parser.set_defaults(filespath='/', db=xdg_config() + '/sit-tagger.sqlite')
+	parser.set_defaults(filespath='/', db=default_db)
 	opts, _ = parser.parse_args(args)
 	return opts
 
