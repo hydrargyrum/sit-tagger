@@ -15,7 +15,7 @@ class Db(object):
 
 	def open(self, path):
 		self.db_path = path
-		self.db = sqlite3.connect(path, isolation_level=None)
+		self.db = sqlite3.connect(path)
 
 	def close(self):
 		self.db_path = None

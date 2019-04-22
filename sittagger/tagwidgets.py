@@ -41,7 +41,8 @@ class TagEditor(QListView):
 		new_tag, ok = QInputDialog.getText(self, 'Enter a tag name', 'New tag')
 		if not ok:
 			return
-		self.db.rename_tag(old_tag, new_tag)
+		with self.db:
+			self.db.rename_tag(old_tag, new_tag)
 		self.setFiles(self.paths)
 
 	def setFile(self, path):
@@ -90,12 +91,13 @@ class TagEditor(QListView):
 
 	@Slot('QStandardItem*')
 	def _tagStateChanged(self, item):
-		if item.checkState() == Qt.Unchecked:
-			for path in self.paths:
-				self.db.untag_file(path, [item.text()])
-		else:
-			for path in self.paths:
-				self.db.tag_file(path, [item.text()])
+		with self.db:
+			if item.checkState() == Qt.Unchecked:
+				for path in self.paths:
+					self.db.untag_file(path, [item.text()])
+			else:
+				for path in self.paths:
+					self.db.tag_file(path, [item.text()])
 
 
 class TagChooser(QListView):

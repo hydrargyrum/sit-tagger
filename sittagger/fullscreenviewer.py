@@ -143,7 +143,8 @@ class ImageViewer(QMainWindow):
 	@Slot()
 	def copyPreviousTags(self):
 		tags = self.db.find_tags_by_file(self.files[self.currentIndex - 1])
-		self.db.tag_file(self.files[self.currentIndex], tags)
+		with self.db:
+			self.db.tag_file(self.files[self.currentIndex], tags)
 		self.tageditor.setFile(self.files[self.currentIndex])
 
 	def setFullscreen(self, full):
