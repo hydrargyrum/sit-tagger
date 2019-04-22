@@ -1,4 +1,6 @@
 
+import sys
+
 from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, QProcess
 
 
@@ -22,7 +24,7 @@ class ThumbnailMaker(QObject):
 		proc.input = path
 		proc.readyReadStandardOutput.connect(self.hasOutput)
 		proc.finished.connect(self.finished)
-		proc.start('python', ['-m', 'vignette', path])
+		proc.start(sys.executable, ['-m', 'vignette', path])
 		self.running += 1
 
 	@Slot()
