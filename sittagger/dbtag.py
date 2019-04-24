@@ -44,6 +44,9 @@ class Db(object):
 	def rename_tag(self, old, new):
 		self.db.execute('update tags_files set tag = ? where tag = ?', (new, old))
 
+	def rename_file(self, old, new):
+		self.db.execute('update tags_files set file = ? where file = ?', (new, old))
+
 	def tag_file(self, path, tags, start=None, end=None):
 		if isinstance(tags, str):
 			tags = [tags]
@@ -60,9 +63,12 @@ class Db(object):
 			self.db.execute('delete from tags_files where file = ? and tag = ?',
 					(path, tag))
 
-	@iter2list
 	def list_tags(self):
 		for row in self.db.execute('select distinct tag from tags_files'):
+			yield row[0]
+
+	def list_files(self):
+		for row in self.db.execute('select distinct file from tags_files'):
 			yield row[0]
 
 	@iter2list
