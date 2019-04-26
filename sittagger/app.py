@@ -5,13 +5,16 @@
 import sys
 import os
 
-from PyQt5.QtCore import QDir, Qt, pyqtSlot as Slot
-from PyQt5.QtWidgets import QMainWindow, QTreeView, QListWidgetItem, QSplitter, QApplication, QAbstractItemView, QTabWidget, QFileSystemModel
+from PyQt5.QtCore import Qt, pyqtSlot as Slot
+from PyQt5.QtWidgets import (
+	QMainWindow, QListWidgetItem, QSplitter, QApplication, QAbstractItemView, QTabWidget,
+)
 
 from . import dbtag
 from .imagewidgets import ImageList
 from .tagwidgets import TagEditor, TagChooser
 from .fullscreenviewer import ImageViewer
+from .dirwidgets import DirTreeView
 
 # qsplitter = a | b
 # a = qtabw
@@ -32,7 +35,10 @@ class Win(QMainWindow):
 		self.rootPath = options.filespath
 
 		self._init_widgets()
-		self._init_more()
+		self._init_dirchooser()
+		self._init_tagchooser()
+		self._init_imagelist()
+		self._init_tabs()
 
 	def _init_widgets(self):
 		bigsplitter = QSplitter(Qt.Horizontal, self)
@@ -43,7 +49,7 @@ class Win(QMainWindow):
 		self.tabWidget = QTabWidget(self)
 
 		self.tagChooser = TagChooser(self.db)
-		self.dirChooser = QTreeView(self)
+		self.dirChooser = DirTreeView(self)
 
 		self.tabWidget.addTab(self.dirChooser, 'Dir')
 		self.tabWidget.addTab(self.tagChooser, 'Tags')
@@ -59,19 +65,20 @@ class Win(QMainWindow):
 
 		self.viewer = None
 
-	def _init_more(self):
-		self.dirModel = QFileSystemModel()
-		self.dirModel.setFilter(QDir.AllDirs | QDir.Drives | QDir.Hidden | QDir.NoDotAndDotDot)
-		qidx = self.dirModel.setRootPath(self.rootPath)
-		self.dirChooser.setModel(self.dirModel)
-		self.dirChooser.setRootIndex(qidx)
-
+	def _init_dirchooser(self):
+		self.dirChooser.setRootPath(self.rootPath)
+		self.dirChooser.openTo(os.getcwd())
 		self.dirChooser.clicked.connect(self.browseSelectedDir)
+
+	def _init_imagelist(self):
 		self.imageList.itemSelectionChanged.connect(self._editTagsItems)
 		self.imageList.itemDoubleClicked.connect(self._spawnViewerItem)
 		self.imageList.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
+	def _init_tabs(self):
 		self.tabWidget.currentChanged.connect(self._tabSelected)
+
+	def _init_tagchooser(self):
 		self.tagChooser.changed.connect(self.browseSelectedTags)
 
 	def editTags(self, path):
@@ -94,7 +101,7 @@ class Win(QMainWindow):
 
 	@Slot()
 	def browseSelectedDir(self):
-		path = self.dirModel.filePath(self.dirChooser.currentIndex())
+		path = self.dirChooser.selectedPath()
 		if not path:
 			return
 		files = [os.path.join(path, f) for f in os.listdir(path)]
