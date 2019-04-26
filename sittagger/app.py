@@ -60,8 +60,6 @@ class Win(QMainWindow):
 		self.viewer = None
 
 	def _init_more(self):
-		self.setWindowTitle('Tags4')
-
 		self.dirModel = QFileSystemModel()
 		self.dirModel.setFilter(QDir.AllDirs | QDir.Drives | QDir.Hidden | QDir.NoDotAndDotDot)
 		qidx = self.dirModel.setRootPath(self.rootPath)
@@ -141,6 +139,9 @@ def main():
 		sys.excepthook = lambda *args: sys.__excepthook__(*args)
 
 	app = QApplication(sys.argv)
+	app.setApplicationDisplayName('SIT-Tagger')
+	app.setApplicationName('SIT-Tagger')
+
 	opts = parse_options(list(app.arguments()))
 	win = Win(opts)
 	win.show()
