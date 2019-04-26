@@ -122,15 +122,15 @@ def xdg_config():
 
 
 def parse_options(args):
-	import optparse
+	import argparse
 
 	default_db = os.getenv('SITTAGGER_DATABASE') or xdg_config() + '/sit-tagger.sqlite'
 
-	parser = optparse.OptionParser()
-	parser.add_option('-d', '--database', metavar='FILE', dest='db')
-	parser.add_option('-p', '--path', dest='filespath')
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-d', '--database', metavar='FILE', dest='db')
+	parser.add_argument('-p', '--path', dest='filespath')
 	parser.set_defaults(filespath='/', db=default_db)
-	opts, _ = parser.parse_args(args)
+	opts = parser.parse_args(args)
 	return opts
 
 
@@ -142,7 +142,7 @@ def main():
 	app.setApplicationDisplayName('SIT-Tagger')
 	app.setApplicationName('SIT-Tagger')
 
-	opts = parse_options(list(app.arguments()))
+	opts = parse_options(list(app.arguments())[1:])
 	win = Win(opts)
 	win.show()
 	app.exec_()
