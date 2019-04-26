@@ -5,10 +5,10 @@ from PyQt5.QtWidgets import QInputDialog, QVBoxLayout, QAction, QDialog, QListVi
 
 
 class TagEditor(QListView):
-	def __init__(self, db):
-		super(TagEditor, self).__init__()
+	def __init__(self, db, *args, **kwargs):
+		super(TagEditor, self).__init__(*args, **kwargs)
 
-		self.data = QStandardItemModel()
+		self.data = QStandardItemModel(self)
 		self.setModel(self.data)
 
 		self.setContextMenuPolicy(Qt.ActionsContextMenu)
@@ -103,14 +103,14 @@ class TagEditor(QListView):
 class TagChooser(QListView):
 	changed = Signal()
 
-	def __init__(self, db):
-		super(TagChooser,self).__init__()
+	def __init__(self, db, *args, **kwargs):
+		super(TagChooser,self).__init__(*args, **kwargs)
 		self.db = db
 
 		self.filter = u''
 
-		self.data = QStandardItemModel()
-		self.proxy = QSortFilterProxyModel()
+		self.data = QStandardItemModel(self)
+		self.proxy = QSortFilterProxyModel(self)
 		self.proxy.setSourceModel(self.data)
 		self.setModel(self.proxy)
 
@@ -148,11 +148,11 @@ class TagChooser(QListView):
 
 
 class TagChooserDialog(QDialog):
-	def __init__(self, db):
-		QDialog.__init__(self)
+	def __init__(self, db, *args, **kwargs):
+		super(TagChooserDialog, self).__init__(*args, **kwargs)
 		self.db = db
 
-		self.chooser = TagChooser(db)
+		self.chooser = TagChooser(db, parent=self)
 		self.setLayout(QVBoxLayout())
 		self.layout().addWidget(self.chooser)
 

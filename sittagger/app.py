@@ -48,14 +48,14 @@ class Win(QMainWindow):
 
 		self.tabWidget = QTabWidget(self)
 
-		self.tagChooser = TagChooser(self.db)
+		self.tagChooser = TagChooser(self.db, parent=self)
 		self.dirChooser = DirTreeView(self)
 
 		self.tabWidget.addTab(self.dirChooser, 'Dir')
 		self.tabWidget.addTab(self.tagChooser, 'Tags')
 
-		self.tagEditor = TagEditor(self.db)
-		self.imageList = ImageList()
+		self.tagEditor = TagEditor(self.db, parent=self)
+		self.imageList = ImageList(parent=self)
 
 		leftsplitter.addWidget(self.tabWidget)
 		leftsplitter.addWidget(self.tagEditor)

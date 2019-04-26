@@ -7,7 +7,7 @@ class DirTreeView(QTreeView):
 	def __init__(self, *args, **kwargs):
 		super(DirTreeView, self).__init__(*args, **kwargs)
 
-		mdl = QFileSystemModel()
+		mdl = QFileSystemModel(parent=self)
 		mdl.setFilter(QDir.AllDirs | QDir.Drives | QDir.Hidden | QDir.NoDotAndDotDot)
 		self.setModel(mdl)
 
