@@ -87,7 +87,7 @@ class Db(object):
 
 	def do_migrations(self):
 		c = self.db.cursor()
-		c.execute('create table if not exists version (version int)')
+		c.execute('create table if not exists version (version integer primary key)')
 
 		base_version = 0
 		for row in self.db.execute('select version from version'):
