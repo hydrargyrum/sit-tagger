@@ -22,13 +22,6 @@ class Db(object):
 		self.db.close()
 		self.db = None
 
-	def create_tables(self):
-		c = self.db.cursor()
-		c.execute('create table if not exists tags_files (file, tag, start, end,'
-		          ' constraint pk_tf primary key(file, tag, start, end))')
-		c.execute('create index if not exists idx_tags on tags_files (tag)')
-		c.execute('create index if not exists idx_files on tags_files (file)')
-
 	def __enter__(self, *args):
 		return self.db.__enter__(*args)
 
@@ -91,3 +84,35 @@ class Db(object):
 		for row in self.db.execute('select start, end from tags_files where file = ? and tag = ?',
 					   (path, tag)):
 			yield row[0], row[1]
+
+	def do_migrations(self):
+		c = self.db.cursor()
+		c.execute('create table if not exists version (version int)')
+
+		base_version = 0
+		for row in self.db.execute('select version from version'):
+			base_version = row[0]
+
+		for ver in range(base_version, max(UPGRADES) + 1):
+			with self.db:
+				for stmt in UPGRADES[ver]:
+					self.db.execute(stmt)
+				self.db.execute('update version set version = ?', (ver + 1,))
+
+
+# key: version to reach from preceding version
+# value: list of statements to execute
+
+UPGRADES = {
+	0: [
+		'insert into version values(0)',
+		'''
+		create table if not exists tags_files (
+			file, tag, start, end,
+			constraint pk_tf primary key(file, tag, start, end)
+		)
+		''',
+		'create index if not exists idx_tags on tags_files (tag)',
+		'create index if not exists idx_files on tags_files (file)',
+	],
+}

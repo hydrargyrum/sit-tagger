@@ -31,7 +31,7 @@ class Win(QMainWindow):
 
 		self.db = dbtag.Db()
 		self.db.open(options.db)
-		self.db.create_tables()
+		self.db.do_migrations()
 		self.rootPath = options.filespath
 
 		self._init_widgets()

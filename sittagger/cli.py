@@ -129,7 +129,7 @@ def main():
 	db.open(args.db)
 	try:
 		with db:
-			db.create_tables()
+			db.do_migrations()
 			err = args.func()
 	finally:
 		db.close()
