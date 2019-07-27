@@ -70,9 +70,23 @@ def main():
 	def do_rename_tag():
 		db.rename_tag(args.src, args.dst)
 
+	def do_rename_file():
+		if not os.path.exists(args.dst):
+			parser.error('will not rename non-existing dest file %r' % args.dst)
+		db.rename_file(args.src, args.dst)
+
 	def do_list_tags():
 		for tag in db.list_tags():
 			print(tag)
+
+	def do_list_files():
+		for file in db.list_files():
+			print(file)
+
+	def do_untrack_files():
+		for item in args.items:
+			tags = db.find_tags_by_file(item)
+			db.untag_file(item, tags)
 
 	parser = build_parser()
 	subs = parser.add_subparsers(dest='subcommand', required=True)
@@ -94,8 +108,20 @@ def main():
 	sub.add_argument('dst')
 	sub.set_defaults(func=do_rename_tag)
 
+	sub = subs.add_parser('rename-file', add_help=False)
+	sub.add_argument('src')
+	sub.add_argument('dst')
+	sub.set_defaults(func=do_rename_file)
+
 	sub = subs.add_parser('list-tags', add_help=False)
 	sub.set_defaults(func=do_list_tags)
+
+	sub = subs.add_parser('list-files', add_help=False)
+	sub.set_defaults(func=do_list_files)
+
+	sub = subs.add_parser('untrack-files', add_help=False)
+	sub.add_argument('items')
+	sub.set_defaults(func=do_untrack_files)
 
 	args = parser.parse_args()
 
