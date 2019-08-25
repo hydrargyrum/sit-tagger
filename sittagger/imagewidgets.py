@@ -32,15 +32,6 @@ class ImageList(QListWidget):
 		super(ImageList, self).__init__(*args, **kwargs)
 		self.items = {}
 
-		self.setViewMode(QListView.IconMode)
-		self.setMovement(QListView.Static)
-		self.setResizeMode(QListView.Adjust)
-		self.setIconSize(QSize(256, 256))
-		self.setGridSize(QSize(275, 275))
-		#~ self.setUniformItemSizes(True)
-		self.setLayoutMode(QListView.Batched)
-		self.setBatchSize(1)
-
 		thumbnailmaker.maker.done.connect(self._thumbnailDone)
 
 	@Slot(str, str)
