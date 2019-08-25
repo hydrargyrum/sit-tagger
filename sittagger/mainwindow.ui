@@ -210,14 +210,14 @@
    <header>sittagger.tagwidgets</header>
   </customwidget>
   <customwidget>
-   <class>ImageList</class>
-   <extends>QListView</extends>
-   <header>sittagger.imagewidgets</header>
-  </customwidget>
-  <customwidget>
    <class>TagFilter</class>
    <extends>QLineEdit</extends>
    <header>sittagger.tagwidgets</header>
+  </customwidget>
+  <customwidget>
+   <class>ImageList</class>
+   <extends>QListWidget</extends>
+   <header>sittagger.imagewidgets</header>
   </customwidget>
  </customwidgets>
  <resources/>
