@@ -1,7 +1,24 @@
 
 from PyQt5.QtCore import Qt, pyqtSignal as Signal, pyqtSlot as Slot, QSortFilterProxyModel
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import QInputDialog, QVBoxLayout, QAction, QDialog, QListView
+from PyQt5.QtWidgets import QInputDialog, QVBoxLayout, QAction, QDialog, QListView, QLineEdit
+
+
+class TagFilter(QLineEdit):
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.textChanged.connect(self.updateFilter)
+		self.widget = None
+
+	def setWidget(self, widget):
+		self.widget = widget
+
+	@Slot()
+	def updateFilter(self):
+		if not self.widget:
+			return
+
+		self.widget.proxy.setFilterFixedString(self.text())
 
 
 class TagEditor(QListView):
@@ -11,7 +28,9 @@ class TagEditor(QListView):
 		self.db = None
 
 		self.data = QStandardItemModel(self)
-		self.setModel(self.data)
+		self.proxy = QSortFilterProxyModel(self)
+		self.proxy.setSourceModel(self.data)
+		self.setModel(self.proxy)
 
 		self.setContextMenuPolicy(Qt.ActionsContextMenu)
 		act = QAction('&Create tag', self)

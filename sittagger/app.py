@@ -66,8 +66,10 @@ class Win(Ui_MainWindow, QMainWindow):
 	def _init_tagchooser(self):
 		self.tagChooser.setDb(self.db)
 		self.tagChooser.changed.connect(self.browseSelectedTags)
+		self.tagChooserFilter.setWidget(self.tagChooser)
 
 		self.tagEditor.setDb(self.db)
+		self.tagEditorFilter.setWidget(self.tagEditor)
 
 	def editTags(self, path):
 		self.tagEditor.setFile(path)
