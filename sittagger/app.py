@@ -72,9 +72,11 @@ class Win(Ui_MainWindow, QMainWindow):
 		self.tagEditorFilter.setWidget(self.tagEditor)
 
 	def editTags(self, path):
+		self.tagEditor.setEnabled(True)
 		self.tagEditor.setFile(path)
 
 	def editTagsItems(self, paths):
+		self.tagEditor.setEnabled(bool(paths))
 		self.tagEditor.setFiles(paths)
 
 	def spawnViewer(self, files, currentFile):

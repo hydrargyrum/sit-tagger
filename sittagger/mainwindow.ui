@@ -131,6 +131,9 @@
          </item>
          <item>
           <widget class="TagEditor" name="tagEditor">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="alternatingRowColors">
             <bool>true</bool>
            </property>
