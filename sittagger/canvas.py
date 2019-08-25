@@ -73,6 +73,8 @@ class Image(ItemMixin, QGraphicsPixmapItem):
 		pix = QPixmap(path)
 		QPixmapCache.insert(path, pix)
 
+		self.setTransformationMode(Qt.SmoothTransformation)
+
 		self.setPixmap(pix)
 
 
