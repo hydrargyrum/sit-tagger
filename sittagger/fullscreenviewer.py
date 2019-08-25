@@ -59,7 +59,9 @@ class ImageViewer(QMainWindow):
 
 		self.toolbar.addAction('Copy tags').triggered.connect(self.copyPreviousTags)
 
-		self.tageditor = TagEditor(self.db)
+		self.tageditor = TagEditor()
+		self.tageditor.setDb(self.db)
+
 		self.docktagger = AutoHideDock()
 		self.docktagger.setWidget(self.tageditor)
 		self.addDockWidget(Qt.LeftDockWidgetArea, self.docktagger)

@@ -5,8 +5,10 @@ from PyQt5.QtWidgets import QInputDialog, QVBoxLayout, QAction, QDialog, QListVi
 
 
 class TagEditor(QListView):
-	def __init__(self, db, *args, **kwargs):
+	def __init__(self, *args, **kwargs):
 		super(TagEditor, self).__init__(*args, **kwargs)
+
+		self.db = None
 
 		self.data = QStandardItemModel(self)
 		self.setModel(self.data)
@@ -22,6 +24,7 @@ class TagEditor(QListView):
 
 		self.data.itemChanged.connect(self._tagStateChanged)
 
+	def setDb(self, db):
 		self.db = db
 
 	@Slot()
@@ -103,9 +106,9 @@ class TagEditor(QListView):
 class TagChooser(QListView):
 	changed = Signal()
 
-	def __init__(self, db, *args, **kwargs):
+	def __init__(self, *args, **kwargs):
 		super(TagChooser,self).__init__(*args, **kwargs)
-		self.db = db
+		self.db = None
 
 		self.filter = u''
 
@@ -115,6 +118,10 @@ class TagChooser(QListView):
 		self.setModel(self.proxy)
 
 		self.data.itemChanged.connect(self.changed)
+
+	def setDb(self, db):
+		self.db = db
+
 		for t in sorted(self.db.list_tags()):
 			item = QStandardItem(t)
 			item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)

@@ -2,67 +2,51 @@
 # base: 2010-02
 # license: WTFPLv2
 
+from importlib import import_module
+from pathlib import Path
 import sys
 import os
 
-from PyQt5.QtCore import Qt, pyqtSlot as Slot
+from PyQt5.QtCore import pyqtSlot as Slot
 from PyQt5.QtWidgets import (
-	QMainWindow, QListWidgetItem, QSplitter, QApplication, QAbstractItemView, QTabWidget,
+	QMainWindow, QListWidgetItem, QApplication, QAbstractItemView,
 )
+from PyQt5.uic import loadUiType
 
 from . import dbtag
-from .imagewidgets import ImageList
-from .tagwidgets import TagEditor, TagChooser
 from .fullscreenviewer import ImageViewer
-from .dirwidgets import DirTreeView
-
-# qsplitter = a | b
-# a = qtabw
-# a / tagchooser
-# a / qtreeview
-# b = c - d
-# c = qlistview
-# d = tageditor
 
 
-class Win(QMainWindow):
+def load_ui_class(package, module_name, class_name):
+	try:
+		mod = import_module(f'.{module_name}_ui', package)
+	except ImportError:
+		mod = import_module(f'.', package)
+
+		folder = Path(mod.__path__[0])
+		path = folder.joinpath(f'{module_name}.ui')
+		return loadUiType(str(path))[0]
+	else:
+		return getattr(mod, class_name)
+
+
+Ui_MainWindow = load_ui_class('sittagger', 'mainwindow', 'MainWindow')
+
+
+class Win(Ui_MainWindow, QMainWindow):
 	def __init__(self, options):
 		super(Win, self).__init__()
+		super().setupUi(self)
 
 		self.db = dbtag.Db()
 		self.db.open(options.db)
 		self.db.do_migrations()
 		self.rootPath = options.filespath
 
-		self._init_widgets()
 		self._init_dirchooser()
 		self._init_tagchooser()
 		self._init_imagelist()
 		self._init_tabs()
-
-	def _init_widgets(self):
-		bigsplitter = QSplitter(Qt.Horizontal, self)
-		self.setCentralWidget(bigsplitter)
-
-		leftsplitter = QSplitter(Qt.Vertical, self)
-
-		self.tabWidget = QTabWidget(self)
-
-		self.tagChooser = TagChooser(self.db, parent=self)
-		self.dirChooser = DirTreeView(self)
-
-		self.tabWidget.addTab(self.dirChooser, 'Dir')
-		self.tabWidget.addTab(self.tagChooser, 'Tags')
-
-		self.tagEditor = TagEditor(self.db, parent=self)
-		self.imageList = ImageList(parent=self)
-
-		leftsplitter.addWidget(self.tabWidget)
-		leftsplitter.addWidget(self.tagEditor)
-
-		bigsplitter.addWidget(leftsplitter)
-		bigsplitter.addWidget(self.imageList)
-
 		self.viewer = None
 
 	def _init_dirchooser(self):
@@ -77,9 +61,13 @@ class Win(QMainWindow):
 
 	def _init_tabs(self):
 		self.tabWidget.currentChanged.connect(self._tabSelected)
+		self.hSplitter.setStretchFactor(1, 1)
 
 	def _init_tagchooser(self):
+		self.tagChooser.setDb(self.db)
 		self.tagChooser.changed.connect(self.browseSelectedTags)
+
+		self.tagEditor.setDb(self.db)
 
 	def editTags(self, path):
 		self.tagEditor.setFile(path)
