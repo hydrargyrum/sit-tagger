@@ -52,11 +52,11 @@ class Win(Ui_MainWindow, QMainWindow):
 	def _init_dirchooser(self):
 		self.dirChooser.setRootPath(self.rootPath)
 		self.dirChooser.openTo(os.getcwd())
-		self.dirChooser.clicked.connect(self.browseSelectedDir)
+		self.dirChooser.selectionModel().currentChanged.connect(self.browseSelectedDir)
 
 	def _init_imagelist(self):
 		self.imageList.itemSelectionChanged.connect(self._editTagsItems)
-		self.imageList.itemDoubleClicked.connect(self._spawnViewerItem)
+		self.imageList.itemActivated.connect(self._spawnViewerItem)
 		self.imageList.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
 	def _init_tabs(self):
