@@ -18,6 +18,12 @@ class ThumbnailMaker(QObject):
 		else:
 			self.queue.append(path)
 
+	def cancelTask(self, path):
+		try:
+			self.queue.remove(path)
+		except ValueError:  # maybe task is already processed
+			pass
+
 	def _createTask(self, path):
 		proc = QProcess(self)
 

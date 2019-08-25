@@ -21,8 +21,7 @@ class ThumbnailItem(QListWidgetItem):
 		thumbnailmaker.maker.addTask(self.path)
 
 	def cancelThumbnail(self):
-		pass
-		#~ thumbnailmaker.maker.cancelTask(self.path)
+		thumbnailmaker.maker.cancelTask(self.path)
 
 	def getPath(self):
 		return self.path
