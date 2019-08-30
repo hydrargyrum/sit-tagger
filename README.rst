@@ -10,5 +10,5 @@ The tags are saved in a local SQLite database.
 Other apps reusing the same database will be added, and support for video files
 will be added.
 
-.. image:: docs/shot-dirview.png
-.. image:: docs/shot-tagview.png
+.. image:: docs/shot-dirview.jpg
+.. image:: docs/shot-tagview.jpg
