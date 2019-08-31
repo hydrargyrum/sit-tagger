@@ -47,7 +47,7 @@ class ThumbnailMaker(QObject):
 
 		self.running -= 1
 		if self.queue:
-			p = self.queue.pop()
+			p = self.queue.pop(0)
 			self._createTask(p)
 
 
