@@ -138,6 +138,11 @@ class TagChooser(QListView):
 
 		self.data.itemChanged.connect(self.changed)
 
+		self.setContextMenuPolicy(Qt.ActionsContextMenu)
+		act = QAction('&Refresh tags', self)
+		act.triggered.connect(self.refreshTags)
+		self.addAction(act)
+
 	def setDb(self, db):
 		self.db = db
 
@@ -171,6 +176,12 @@ class TagChooser(QListView):
 		res = list(self.db.find_files_by_tags(tags))
 		res.sort()
 		return res
+
+	@Slot()
+	def refreshTags(self):
+		selected = self.selectedTags()
+		self.setDb(self.db)
+		self.setTags(selected)
 
 
 class TagChooserDialog(QDialog):
