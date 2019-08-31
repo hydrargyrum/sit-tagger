@@ -96,6 +96,9 @@ class Win(Ui_MainWindow, QMainWindow):
 		path = self.dirChooser.selectedPath()
 		if not path:
 			return
+
+		self.setWindowTitle(str(path))
+
 		files = [os.path.join(path, f) for f in os.listdir(path)]
 		files = [f for f in files if os.path.isfile(f)]
 		files.sort()
@@ -103,6 +106,7 @@ class Win(Ui_MainWindow, QMainWindow):
 
 	@Slot()
 	def browseSelectedTags(self):
+		self.setWindowTitle(' + '.join(self.tagChooser.selectedTags()))
 		self.imageList.setFiles(self.tagChooser.matchingFiles())
 
 	@Slot(int)

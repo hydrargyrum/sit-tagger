@@ -141,6 +141,7 @@ class ImageViewer(QMainWindow):
 	def setFile(self, file):
 		self.tageditor.setFile(file)
 		self.scrollview.setFile(file)
+		self.setWindowTitle(file)
 
 	@Slot()
 	def copyPreviousTags(self):
