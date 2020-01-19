@@ -76,21 +76,6 @@ class ImageViewer(QMainWindow):
 		self.scrollview.leftZoneEntered.connect(self.docktagger.show)
 		self.scrollview.leftZoneLeft.connect(self.docktagger.hide)
 
-		#~ self.setWindowState(self.windowState() | Qt.WindowMaximized)
-
-		'''
-		self.qtagwl = QListWidget()
-		self.qtagwl.setParent(self)
-		self.qtagwl.hide()
-		#self.qtagwl.setFixedSize(self.qtagwl.minimumSizeHint())
-		self.qtagwl.setFrameShape(QFrame.NoFrame)
-		self.qtagwl.setStyleSheet('QListWidget{background-color: rgba(255,255,255,200);}\n *{background-color:rgba(0,255,255,255);}')
-		self.qtagwl.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
-
-		self.qthtimer = QTimer()
-		self.connect(self.qthtimer, SIGNAL('timeout()'), self.qtaghide)
-		'''
-
 	def eventFilter(self, sview, ev):
 		if ev.type() == QEvent.KeyPress:
 			if ev.key() == Qt.Key_Escape:
@@ -122,7 +107,7 @@ class ImageViewer(QMainWindow):
 
 	@Slot()
 	def unzoom(self):
-		self.scrollview.multiplyZoomFactor(1/1.5)
+		self.scrollview.multiplyZoomFactor(1 / 1.5)
 
 	def spawn(self, files, currentFile):
 		self.files = files
@@ -175,6 +160,9 @@ class ImageViewerCenter(QScrollArea):
 	leftZoneEntered = Signal()
 	leftZoneLeft = Signal()
 
+	leftMargin = 30
+	topMargin = 30
+
 	def __init__(self, *args, **kwargs):
 		super(ImageViewerCenter, self).__init__(*args, **kwargs)
 		self.zoomMode = ZOOM_FACTOR
@@ -215,14 +203,14 @@ class ImageViewerCenter(QScrollArea):
 			self.horizontalScrollBar().setValue(self.movingScrolls[0] - (p.x() - self.moving[0]))
 			self.verticalScrollBar().setValue(self.movingScrolls[1] - (p.y() - self.moving[1]))
 		else:
-			newLeft = (ev.x() < 30)
+			newLeft = (ev.x() < self.leftMargin)
 			if newLeft and not self.leftZone:
 				self.leftZoneEntered.emit()
 			elif self.leftZone and not newLeft:
 				self.leftZoneLeft.emit()
 			self.leftZone = newLeft
 
-			newTop = (ev.y() < 30)
+			newTop = (ev.y() < self.topMargin)
 			if newTop and not self.topZone:
 				self.topZoneEntered.emit()
 			elif self.topZone and not newTop:
