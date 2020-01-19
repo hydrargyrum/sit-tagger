@@ -71,6 +71,7 @@ class Win(Ui_MainWindow, QMainWindow):
 
 		self.tagEditor.setDb(self.db)
 		self.tagEditorFilter.setWidget(self.tagEditor)
+		self.tagEditor.changedTags.connect(self.tagChooser.refreshTags)
 
 	def editTags(self, path):
 		self.tagEditor.setEnabled(True)

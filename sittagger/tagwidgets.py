@@ -22,10 +22,13 @@ class TagFilter(QLineEdit):
 
 
 class TagEditor(QListView):
+	changedTags = Signal()
+
 	def __init__(self, *args, **kwargs):
 		super(TagEditor, self).__init__(*args, **kwargs)
 
 		self.db = None
+		self.paths = []
 
 		self.data = QStandardItemModel(self)
 		self.proxy = QSortFilterProxyModel(self)
@@ -52,6 +55,7 @@ class TagEditor(QListView):
 		if not ok:
 			return
 		self.data.appendRow(self._createItem(tag))
+		self.changedTags.emit()
 
 	@Slot()
 	def _renameTag(self):
@@ -66,6 +70,7 @@ class TagEditor(QListView):
 		with self.db:
 			self.db.rename_tag(old_tag, new_tag)
 		self.setFiles(self.paths)
+		self.changedTags.emit()
 
 	def setFile(self, path):
 		return self.setFiles([path])
@@ -120,6 +125,10 @@ class TagEditor(QListView):
 			else:
 				for path in self.paths:
 					self.db.tag_file(path, [item.text()])
+
+	@Slot()
+	def refreshTags(self):
+		self.setFiles(self.paths)
 
 
 class TagChooser(QListView):
