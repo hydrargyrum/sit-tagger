@@ -1,7 +1,7 @@
 
 import sys
 
-from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, QProcess
+from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, QProcess, QThread
 
 
 class ThumbnailMaker(QObject):
@@ -11,9 +11,10 @@ class ThumbnailMaker(QObject):
 		super(ThumbnailMaker, self).__init__(*args, **kwargs)
 		self.queue = []
 		self.running = 0
+		self.queue_max = QThread.idealThreadCount()
 
 	def addTask(self, path):
-		if self.running < 5:
+		if self.running < self.queue_max:
 			self._createTask(path)
 		else:
 			self.queue.append(path)
