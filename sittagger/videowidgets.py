@@ -1,5 +1,7 @@
 # coding: utf-8
 
+import os.path
+
 from PyQt5.QtCore import pyqtSignal as Signal, pyqtSlot as Slot, QUrl, Qt
 from PyQt5.QtWidgets import QLabel, QWidget, QPushButton, QTableWidget, QTableWidgetItem, QSlider, QHBoxLayout, QVBoxLayout
 from PyQt5.QtMultimediaWidgets import QVideoWidget
@@ -79,7 +81,7 @@ class BasicVideoWidget(QVideoWidget):
 		self.mediaPlayer.setMedia(mc)
 
 	def load(self, path):
-		self.loadUrl(QUrl.fromLocalFile(path))
+		self.loadUrl(QUrl.fromLocalFile(os.path.abspath(path)))
 
 	@Slot()
 	def play(self):
