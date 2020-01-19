@@ -5,7 +5,9 @@ import os.path
 from PyQt5.QtCore import pyqtSignal as Signal, pyqtSlot as Slot, QUrl, Qt
 from PyQt5.QtWidgets import QLabel, QWidget, QPushButton, QTableWidget, QTableWidgetItem, QSlider, QHBoxLayout, QVBoxLayout
 from PyQt5.QtMultimediaWidgets import QVideoWidget
-from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
+from PyQt5.QtMultimedia import (
+	QMediaContent, QMediaPlayer, QMediaPlaylist,
+)
 
 from .tagwidgets import TagChooserDialog
 
@@ -70,6 +72,10 @@ class BasicVideoWidget(QVideoWidget):
 		self.mediaPlayer = QMediaPlayer(parent=self)
 		self.setMediaObject(self.mediaPlayer)
 
+		self.playlist = QMediaPlaylist()
+		self.playlist.setPlaybackMode(QMediaPlaylist.Loop)
+		self.mediaPlayer.setPlaylist(self.playlist)
+
 		self.mediaPlayer.positionChanged.connect(self._positionChanged)
 		self.mediaPlayer.mutedChanged.connect(self.mutedChanged)
 		self.mediaPlayer.durationChanged.connect(self._durationChanged)
@@ -78,7 +84,8 @@ class BasicVideoWidget(QVideoWidget):
 
 	def loadUrl(self, url):
 		mc = QMediaContent(url)
-		self.mediaPlayer.setMedia(mc)
+		self.playlist.clear()
+		self.playlist.addMedia(mc)
 
 	def load(self, path):
 		self.loadUrl(QUrl.fromLocalFile(os.path.abspath(path)))
