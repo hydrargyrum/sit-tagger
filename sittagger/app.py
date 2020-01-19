@@ -51,8 +51,9 @@ class Win(Ui_MainWindow, QMainWindow):
 
 	def _init_dirchooser(self):
 		self.dirChooser.setRootPath(self.rootPath)
-		self.dirChooser.openTo(os.getcwd())
 		self.dirChooser.selectionModel().currentChanged.connect(self.browseSelectedDir)
+		self.dirChooser.selectPath(os.getcwd())
+		self.dirChooser.openTo(os.getcwd())
 
 	def _init_imagelist(self):
 		self.imageList.itemSelectionChanged.connect(self._editTagsItems)

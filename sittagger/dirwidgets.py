@@ -18,8 +18,11 @@ class DirTreeView(QTreeView):
 
 	def openTo(self, path):
 		qidx = self.model().index(path)
-		self.scrollTo(qidx)
+		self.scrollTo(qidx, self.PositionAtCenter)
+
+	def selectPath(self, path):
+		qidx = self.model().index(path)
+		self.setCurrentIndex(qidx)
 
 	def selectedPath(self):
 		return self.model().filePath(self.currentIndex())
-
