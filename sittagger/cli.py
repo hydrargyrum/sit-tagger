@@ -73,7 +73,14 @@ def main():
 	def do_rename_file():
 		if not os.path.exists(args.dst):
 			parser.error('will not rename non-existing dest file %r' % args.dst)
-		db.rename_file(args.src, args.dst)
+
+		args.src = os.path.abspath(args.src)
+		args.dst = os.path.abspath(args.dst)
+
+		if args.recursive:
+			db.rename_folder(args.src, args.dst)
+		else:
+			db.rename_file(args.src, args.dst)
 
 	def do_list_tags():
 		for tag in db.list_tags():
@@ -109,6 +116,7 @@ def main():
 	sub.set_defaults(func=do_rename_tag)
 
 	sub = subs.add_parser('rename-file', description='Consider a file renamed, keep linked tags to it (does not move the file on-disk)')
+	sub.add_argument('--recursive', action='store_true', help='src and dst are folders, move their content')
 	sub.add_argument('src', help='Old name/path of file')
 	sub.add_argument('dst', help='New name/path of file')
 	sub.set_defaults(func=do_rename_file)

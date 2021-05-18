@@ -40,6 +40,21 @@ class Db(object):
 	def rename_file(self, old, new):
 		self.db.execute('update tags_files set file = ? where file = ?', (new, old))
 
+	def rename_folder(self, old, new):
+		# force slashes to avoid matching /aaabbb with /aaa pattern but only /aaa/bbb
+		old = old + '/'
+		new = new + '/'
+
+		# don't use LIKE in WHERE because old could contain '%' or metacharacters
+		self.db.execute(
+			'''
+			update tags_files
+			set file = ? || substring(file, ?)
+			where substring(file, 1, ?) = ?
+			''',
+			(new, len(old) + 1, len(old), old)
+		)
+
 	def tag_file(self, path, tags, start=None, end=None):
 		if isinstance(tags, str):
 			tags = [tags]
