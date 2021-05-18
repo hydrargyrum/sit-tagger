@@ -56,6 +56,12 @@ class Db(object):
 			self.db.execute('delete from tags_files where file = ? and tag = ?',
 					(path, tag))
 
+	def untrack_file(self, path):
+		self.db.execute(
+			'delete from tags_files where file = ?',
+			(path,)
+		)
+
 	def list_tags(self):
 		for row in self.db.execute('select distinct tag from tags_files'):
 			yield row[0]

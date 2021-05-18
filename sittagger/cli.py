@@ -85,8 +85,8 @@ def main():
 
 	def do_untrack_files():
 		for item in args.items:
-			tags = db.find_tags_by_file(item)
-			db.untag_file(item, tags)
+			item = os.path.abspath(item)
+			db.untrack_file(item)
 
 	parser = build_parser()
 	subs = parser.add_subparsers(dest='subcommand', required=True)
@@ -120,7 +120,7 @@ def main():
 	sub.set_defaults(func=do_list_files)
 
 	sub = subs.add_parser('untrack-files', description='Unlink all tags from a file')
-	sub.add_argument('items')
+	sub.add_argument('items', nargs='+')
 	sub.set_defaults(func=do_untrack_files)
 
 	args = parser.parse_args()
