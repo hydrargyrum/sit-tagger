@@ -99,27 +99,27 @@ def main():
 	sub.add_argument('items', nargs='+')
 	sub.set_defaults(func=do_query)
 
-	sub = subs.add_parser('show', add_help=False)
+	sub = subs.add_parser('show', description='Show tags associated to files')
 	sub.add_argument('items', nargs='+')
 	sub.set_defaults(func=do_show)
 
-	sub = subs.add_parser('rename-tag', add_help=False)
-	sub.add_argument('src')
-	sub.add_argument('dst')
+	sub = subs.add_parser('rename-tag', description='Rename a tag (and keep linked files to it)')
+	sub.add_argument('src', help='Current name of the tag')
+	sub.add_argument('dst', help='New name of the tag')
 	sub.set_defaults(func=do_rename_tag)
 
-	sub = subs.add_parser('rename-file', add_help=False)
-	sub.add_argument('src')
-	sub.add_argument('dst')
+	sub = subs.add_parser('rename-file', description='Consider a file renamed, keep linked tags to it (does not move the file on-disk)')
+	sub.add_argument('src', help='Old name/path of file')
+	sub.add_argument('dst', help='New name/path of file')
 	sub.set_defaults(func=do_rename_file)
 
-	sub = subs.add_parser('list-tags', add_help=False)
+	sub = subs.add_parser('list-tags', description='List all tags')
 	sub.set_defaults(func=do_list_tags)
 
-	sub = subs.add_parser('list-files', add_help=False)
+	sub = subs.add_parser('list-files', description='List tagged files')
 	sub.set_defaults(func=do_list_files)
 
-	sub = subs.add_parser('untrack-files', add_help=False)
+	sub = subs.add_parser('untrack-files', description='Unlink all tags from a file')
 	sub.add_argument('items')
 	sub.set_defaults(func=do_untrack_files)
 
