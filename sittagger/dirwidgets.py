@@ -1,6 +1,14 @@
 
-from PyQt5.QtCore import QDir
-from PyQt5.QtWidgets import QTreeView, QFileSystemModel
+from pathlib import Path
+
+from PyQt5.QtCore import QDir, pyqtSlot as Slot, Qt
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import (
+	QTreeView, QFileSystemModel, QAction, QInputDialog, QLineEdit,
+	QMessageBox,
+)
+
+from .fsops import move_folder
 
 
 class DirTreeView(QTreeView):
@@ -10,6 +18,12 @@ class DirTreeView(QTreeView):
 		mdl = QFileSystemModel(parent=self)
 		mdl.setFilter(QDir.AllDirs | QDir.Drives | QDir.Hidden | QDir.NoDotAndDotDot)
 		self.setModel(mdl)
+
+		action = QAction(parent=self)
+		action.setShortcut(QKeySequence("F2"))
+		action.setShortcutContext(Qt.WidgetShortcut)
+		action.triggered.connect(self.popRenameSelected)
+		self.addAction(action)
 
 	def setRootPath(self, path):
 		self.root_path = path
@@ -26,3 +40,31 @@ class DirTreeView(QTreeView):
 
 	def selectedPath(self):
 		return self.model().filePath(self.currentIndex())
+
+	@Slot()
+	def popRenameSelected(self):
+		db = self.window().db
+		current = Path(self.selectedPath()).absolute()
+
+		new, ok = QInputDialog.getText(
+			self,
+			self.tr("Rename directory"),
+			self.tr("New name for directory"),
+			QLineEdit.Normal,
+			current.name
+		)
+
+		if not ok or not new or new == current.name:
+			return
+		if "/" in new:
+			QMessageBox.critical(
+				self,
+				self.tr("Error"),
+				self.tr("New name %r cannot contain '/'") % new,
+			)
+			return
+
+		new = current.with_name(new)
+
+		move_folder(current, new, db)
+		self.selectPath(str(new))
