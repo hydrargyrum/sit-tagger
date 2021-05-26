@@ -43,17 +43,17 @@ class Win(Ui_MainWindow, QMainWindow):
 		self.db.do_migrations()
 		self.rootPath = options.filespath
 
-		self._init_dirchooser()
+		self._init_dirchooser(options.target)
 		self._init_tagchooser()
 		self._init_imagelist()
 		self._init_tabs()
 		self.viewer = None
 
-	def _init_dirchooser(self):
+	def _init_dirchooser(self, folder):
 		self.dirChooser.setRootPath(self.rootPath)
 		self.dirChooser.selectionModel().currentChanged.connect(self.browseSelectedDir)
-		self.dirChooser.selectPath(os.getcwd())
-		self.dirChooser.openTo(os.getcwd())
+		self.dirChooser.selectPath(folder)
+		self.dirChooser.openTo(folder)
 
 	def _init_imagelist(self):
 		self.imageList.itemSelectionChanged.connect(self._editTagsItems)
@@ -134,6 +134,7 @@ def parse_options(args):
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-d', '--database', metavar='FILE', dest='db')
 	parser.add_argument('-p', '--path', dest='filespath')
+	parser.add_argument('target', nargs='?', default=os.getcwd())
 	parser.set_defaults(filespath='/', db=default_db)
 	opts = parser.parse_args(args)
 	return opts
