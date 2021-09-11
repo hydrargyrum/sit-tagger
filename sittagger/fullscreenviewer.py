@@ -1,6 +1,6 @@
 
 from PyQt5.QtCore import Qt, QEvent, pyqtSignal as Signal, pyqtSlot as Slot
-from PyQt5.QtGui import QKeySequence, QPalette, QPixmap, QMovie, QIcon
+from PyQt5.QtGui import QKeySequence, QPalette, QPixmap, QMovie, QIcon, QImageReader
 from PyQt5.QtWidgets import QMainWindow, QScrollArea, QDockWidget, QToolBar, QLabel
 
 from .tagwidgets import TagEditor
@@ -255,7 +255,12 @@ class ImageViewerCenter(QScrollArea):
 			self.movie.start()
 		else:
 			self.movie = None
-			self.originalPixmap = QPixmap(file)
+
+			img_reader = QImageReader(file)
+			img_reader.setAutoTransform(True)
+			img = img_reader.read()
+
+			self.originalPixmap = QPixmap.fromImage(img)
 			self._rebuildZoom()
 
 	###
