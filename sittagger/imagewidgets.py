@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (
 	QMessageBox,
 )
 
+from .fm_interop import mark_for_copy, mark_for_cut, ClipQt
 from .fsops import move_file
 from . import thumbnailmaker
 
@@ -52,6 +53,18 @@ class ImageList(QListWidget):
 		action.setShortcut(QKeySequence("F2"))
 		action.setShortcutContext(Qt.WidgetShortcut)
 		action.triggered.connect(self.popRenameSelected)
+		self.addAction(action)
+
+		action = QAction(parent=self)
+		action.setShortcut(QKeySequence(QKeySequence.Copy))
+		action.setShortcutContext(Qt.WidgetShortcut)
+		action.triggered.connect(self.markForCopy)
+		self.addAction(action)
+
+		action = QAction(parent=self)
+		action.setShortcut(QKeySequence(QKeySequence.Cut))
+		action.setShortcutContext(Qt.WidgetShortcut)
+		action.triggered.connect(self.markForCut)
 		self.addAction(action)
 
 	@Slot(str, str)
@@ -113,3 +126,21 @@ class ImageList(QListWidget):
 		item = self.items.pop(str(current))
 		item._updatePath(str(new))
 		self.items[str(new)] = item
+
+	@Slot()
+	def markForCopy(self):
+		selected = self.selectedItems()
+		if not selected:
+			return
+
+		paths = [obj.getPathObject().absolute() for obj in selected]
+		mark_for_copy(paths, ClipQt)
+
+	@Slot()
+	def markForCut(self):
+		selected = self.selectedItems()
+		if not selected:
+			return
+
+		paths = [obj.getPathObject().absolute() for obj in selected]
+		mark_for_cut(paths, ClipQt)
