@@ -50,6 +50,10 @@ class Win(Ui_MainWindow, QMainWindow):
 		self.viewer = None
 
 	def _init_dirchooser(self, folder):
+		if folder.is_file():
+			folder = folder.parent
+		folder = str(folder)
+
 		self.dirChooser.setRootPath(self.rootPath)
 		self.dirChooser.selectionModel().currentChanged.connect(self.browseSelectedDir)
 		self.dirChooser.selectPath(folder)
@@ -132,7 +136,7 @@ class Win(Ui_MainWindow, QMainWindow):
 
 
 def xdg_config():
-	return os.getenv('XDG_CONFIG_HOME', os.getenv('HOME', '/') + '/.config')
+	return os.getenv('XDG_CONFIG_HOME', str(Path.home() / ".config"))
 
 
 def parse_options(args):
@@ -143,9 +147,10 @@ def parse_options(args):
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-d', '--database', metavar='FILE', dest='db')
 	parser.add_argument('-p', '--path', dest='filespath')
-	parser.add_argument('target', nargs='?', default=os.getcwd())
+	parser.add_argument('target', nargs='?', default=Path.cwd(), type=Path)
 	parser.set_defaults(filespath='/', db=default_db)
 	opts = parser.parse_args(args)
+	opts.target = opts.target.absolute()
 	return opts
 
 
