@@ -8,6 +8,7 @@ import sys
 import os
 
 from PyQt5.QtCore import pyqtSlot as Slot
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import (
 	QMainWindow, QListWidgetItem, QApplication, QAbstractItemView,
 )
@@ -37,6 +38,10 @@ class Win(Ui_MainWindow, QMainWindow):
 	def __init__(self, options):
 		super(Win, self).__init__()
 		super().setupUi(self)
+
+		self.setWindowIcon(QIcon(QPixmap(
+			str(Path(__file__).parent.with_name("sittagger.png"))
+		)))
 
 		self.db = dbtag.Db()
 		self.db.open(options.db)
