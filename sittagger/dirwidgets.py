@@ -20,6 +20,9 @@ class DirTreeView(QTreeView):
 		mdl.setFilter(QDir.AllDirs | QDir.Drives | QDir.Hidden | QDir.NoDotAndDotDot)
 		self.setModel(mdl)
 
+		for col in range(1, self.header().count()):
+			self.setColumnHidden(col, True)
+
 		action = QAction(parent=self)
 		action.setShortcut(QKeySequence("F2"))
 		action.setShortcutContext(Qt.WidgetShortcut)
