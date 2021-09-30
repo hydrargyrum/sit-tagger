@@ -5,10 +5,11 @@ from PyQt5.QtCore import QDir, pyqtSlot as Slot, Qt
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
 	QTreeView, QFileSystemModel, QAction, QInputDialog, QLineEdit,
-	QMessageBox,
+	QMessageBox, QProgressDialog,
 )
 
-from .fsops import move_folder
+from .fsops import move_folder, FileOperation
+from .fm_interop import ClipQt, get_files_clipboard
 
 
 class DirTreeView(QTreeView):
@@ -68,3 +69,40 @@ class DirTreeView(QTreeView):
 
 		move_folder(current, new, db)
 		self.selectPath(str(new))
+
+	def pasteFiles(self):
+		target = Path(self.selectedPath())
+
+		op, files = get_files_clipboard(ClipQt)
+
+		assert op in ("copy", "cut")
+
+		treeop = FileOperation(target, files, op)
+		dlg = FileOperationProgress(self)
+		dlg.setOp(treeop)
+		dlg.show()
+		dlg.open()
+		treeop.start()
+
+
+class FileOperationProgress(QProgressDialog):
+	def __init__(self, parent):
+		super().__init__(parent)
+		self.setAutoReset(False)
+		self.setAutoClose(False)
+		self.setMinimumDuration(0)
+		self.finished.connect(self.deleteLater)
+		self.op = None
+
+	def setOp(self, op):
+		self.op = op
+		self.op.processing.connect(self.onProgress)
+		self.op.started.connect(self.exec_)
+		self.op.finished.connect(self.accept)
+		self.canceled.connect(self.op.cancel)
+
+	@Slot(str, int, int)
+	def onProgress(self, name, current, total):
+		print(name, current)
+		self.setLabelText(name)
+		self.setValue(current * 100 // total)

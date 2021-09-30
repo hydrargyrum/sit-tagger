@@ -59,6 +59,7 @@ class Win(Ui_MainWindow, QMainWindow):
 		self.imageList.itemSelectionChanged.connect(self._editTagsItems)
 		self.imageList.itemActivated.connect(self._spawnViewerItem)
 		self.imageList.setSelectionMode(QAbstractItemView.ExtendedSelection)
+		self.imageList.pasteRequested.connect(self._onListPaste)
 
 	def _init_tabs(self):
 		self.tabWidget.currentChanged.connect(self._tabSelected)
@@ -120,6 +121,14 @@ class Win(Ui_MainWindow, QMainWindow):
 
 	def browsePath(self, path):
 		self.imageList.setFiles(os.path.join(path, f) for f in os.listdir(path))
+
+
+	@Slot()
+	def _onListPaste(self):
+		if self.tabWidget.currentIndex() != 0:
+			return
+
+		self.dirChooser.pasteFiles()
 
 
 def xdg_config():

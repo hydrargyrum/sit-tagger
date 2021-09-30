@@ -2,7 +2,7 @@
 import os
 from pathlib import Path
 
-from PyQt5.QtCore import QSize, Qt, pyqtSlot as Slot
+from PyQt5.QtCore import QSize, Qt, pyqtSlot as Slot, pyqtSignal as Signal
 from PyQt5.QtGui import QIcon, QPixmap, QKeySequence
 from PyQt5.QtWidgets import (
 	QListWidget, QListWidgetItem, QListView,
@@ -43,6 +43,8 @@ class ThumbnailItem(QListWidgetItem):
 
 
 class ImageList(QListWidget):
+	pasteRequested = Signal()
+
 	def __init__(self, *args, **kwargs):
 		super(ImageList, self).__init__(*args, **kwargs)
 		self.items = {}
@@ -65,6 +67,12 @@ class ImageList(QListWidget):
 		action.setShortcut(QKeySequence(QKeySequence.Cut))
 		action.setShortcutContext(Qt.WidgetShortcut)
 		action.triggered.connect(self.markForCut)
+		self.addAction(action)
+
+		action = QAction(parent=self)
+		action.setShortcut(QKeySequence(QKeySequence.Paste))
+		action.setShortcutContext(Qt.WidgetShortcut)
+		action.triggered.connect(self.pasteRequested)
 		self.addAction(action)
 
 	@Slot(str, str)

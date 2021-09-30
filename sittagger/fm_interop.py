@@ -24,7 +24,7 @@ class ClipQt:
 
     @staticmethod
     def get_clipboard(mime):
-        return QGuiApplication.clipboard().mimeData().data(mime).decode("utf-8")
+        return bytes(QGuiApplication.clipboard().mimeData().data(mime)).decode("utf-8")
 
 
 def mark_for_copy(files, cls):
