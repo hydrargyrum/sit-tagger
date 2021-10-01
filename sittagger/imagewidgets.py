@@ -75,6 +75,10 @@ class ImageList(QListWidget):
 		action.triggered.connect(self.pasteRequested)
 		self.addAction(action)
 
+	def showEvent(self, ev):
+		super().showEvent(ev)
+		self.verticalScrollBar().setSingleStep(32)
+
 	@Slot(str, str)
 	def _thumbnailDone(self, origpath, thumbpath):
 		if origpath not in self.items:
