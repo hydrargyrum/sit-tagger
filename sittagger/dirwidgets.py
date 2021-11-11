@@ -80,7 +80,7 @@ class DirTreeView(QTreeView):
 
 		assert op in ("copy", "cut")
 
-		treeop = FileOperation(target, files, op)
+		treeop = FileOperation(target, files, op, self.window().db)
 		dlg = FileOperationProgress(self)
 		dlg.setOp(treeop)
 		dlg.show()

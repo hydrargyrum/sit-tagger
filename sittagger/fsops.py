@@ -30,6 +30,33 @@ def _rename_with_thumb(src, dst):
 	return ret
 
 
+THUMB_SIZES = ("normal", "large")
+
+
+def _pre_rename_thumb(src):
+	if isinstance(src, Path):
+		src = str(src)
+
+	if src.startswith(vignette._thumb_path_prefix()):
+		return {}
+
+	thumbs = {}
+	for sz in THUMB_SIZES:
+		tsrc = vignette.try_get_thumbnail(src, sz)
+		if tsrc:
+			thumbs[sz] = tsrc
+
+	return thumbs
+
+
+def _post_rename_thumb(thumbs, dst):
+	if isinstance(dst, Path):
+		dst = str(dst)
+
+	for sz, tsrc in thumbs.items():
+		vignette.put_thumbnail(dst, sz, tsrc)
+
+
 def move_file(old, new, db):
 	old = Path(old).absolute()
 	new = Path(new).absolute()
@@ -37,9 +64,11 @@ def move_file(old, new, db):
 	if _get_dev(old) != _get_dev(new.parent):
 		raise NotImplementedError()
 
-	_rename_with_thumb(str(old), str(new))
+	thumbs = _pre_rename_thumb(old)
+	_os_rename(str(old), str(new))
 	with db:
 		db.rename_file(str(old), str(new))
+	_post_rename_thumb(thumbs, new)
 
 
 def _scan_thumbs(path):
@@ -83,19 +112,49 @@ class Cancelled(Exception):
 class FileOperation(QThread):
 	processing = Signal(str, int, int)
 
-	def __init__(self, dest, sources, op):
+	def __init__(self, dest, sources, op, db):
 		super().__init__()
 		self.dest = dest
 		self.sources = sources
 		self.op = op
+		self.db = db
 		self.is_cancelled = Event()
 		assert op in ("cut", "copy")
+		assert self.dest.is_dir()
 
 	def copytree(self, src, dst):
 		shutil.copytree(src, dst, copy=self._copy)
 
 	def movetree(self, src, dst):
-		shutil.move(src, dst, copy_function=self._copy)
+		is_dir = src.is_dir()
+		xdev = _get_dev(src) != _get_dev(dst)
+
+		thumbs_inodes = None
+		thumbs = None
+		if not xdev:
+			if is_dir:
+				thumbs_inodes = _scan_thumbs(src)
+			else:
+				thumbs = _pre_rename_thumb(src)
+
+		shutil.move(src, dst, copy_function=self._copy_for_move)
+
+		if not xdev:
+			if is_dir:
+				with self.db:
+					self.db.rename_folder(src, dst)
+				_restore_thumbs(dst, thumbs_inodes)
+			else:
+				with self.db:
+					self.db.rename_file(src, dst)
+				_post_rename_thumb(thumbs, dst)
+
+	def _copy_for_move(self, src, dst):
+		thumbs = _pre_rename_thumb(src)
+		self._copy(src, dst)
+		with self.db:
+			self.db.rename_file(src, dst)
+		_post_rename_thumb(thumbs, dst)
 
 	def _copy(self, src, dst):
 		if self.is_cancelled.is_set():
