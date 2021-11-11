@@ -91,7 +91,7 @@ def _restore_thumbs(path, inodes):
 			vignette.put_thumbnail(str(sub), 'large', thumb)
 
 
-def move_folder(old, new, db):
+def rename_folder(old, new, db):
 	old = Path(old).absolute()
 	new = Path(new).absolute()
 

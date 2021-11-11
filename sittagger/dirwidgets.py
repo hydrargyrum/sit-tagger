@@ -1,24 +1,82 @@
 
 from pathlib import Path
 
-from PyQt5.QtCore import QDir, pyqtSlot as Slot, Qt
+from PyQt5.QtCore import QDir, pyqtSlot as Slot, Qt, pyqtSignal as Signal, QMimeData
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
 	QTreeView, QFileSystemModel, QAction, QInputDialog, QLineEdit,
 	QMessageBox, QProgressDialog,
 )
 
-from .fsops import move_folder, FileOperation
-from .fm_interop import ClipQt, get_files_clipboard
+from .fsops import rename_folder, FileOperation
+from .fm_interop import ClipQt, get_files_clipboard, MIME_LIST, _parse_url
+
+
+class FSModelWithDND(QFileSystemModel):
+	def flags(self, qidx):
+		flags = super().flags(qidx)
+		if qidx.isValid():
+			flags |= Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled
+		return flags
+
+	def mimeTypes(self):
+		return [MIME_LIST]
+
+	def mimeData(self, qindexes):
+		ret = QMimeData()
+		ret.setData(
+			MIME_LIST,
+			b"\r\n".join(
+				Path(self.filePath(qidx)).absolute().as_uri().encode("ascii")
+				for qidx in qindexes
+			) + b"\r\n"
+		)
+		return ret
+
+	def supportedDropActions(self):
+		return Qt.CopyAction | Qt.MoveAction
+
+	def canDropMimeData(self, qmime, action, row, column, parent_qidx):
+		if column > 0 or row > -1:
+			# row is -1 when pointing to a qmodelindex
+			# row is >= 0 when pointing between rows
+			return False
+
+		return super().canDropMimeData(qmime, action, row, column, parent_qidx)
+
+	fileOperation = Signal(FileOperation)
+
+	def dropMimeData(self, qmime, action, row, column, parent_qidx):
+		if not self.canDropMimeData(qmime, action, row, column, parent_qidx):
+			return False
+
+		urls = bytes(qmime.data(MIME_LIST)).decode("ascii").rstrip().split("\r\n")
+		files = [_parse_url(url) for url in urls]
+
+		parent_path = Path(self.filePath(parent_qidx))
+
+		if action == Qt.MoveAction:
+			op = "cut"
+		elif action == Qt.CopyAction:
+			op = "copy"
+		else:
+			raise NotImplementedError()
+
+		treeop = FileOperation(parent_path, files, op, None)
+		self.fileOperation.emit(treeop)
+
+		# this is actually fake, the operation has not finished yet
+		return True
 
 
 class DirTreeView(QTreeView):
 	def __init__(self, *args, **kwargs):
 		super(DirTreeView, self).__init__(*args, **kwargs)
 
-		mdl = QFileSystemModel(parent=self)
+		mdl = FSModelWithDND(parent=self)
 		mdl.setFilter(QDir.AllDirs | QDir.Drives | QDir.Hidden | QDir.NoDotAndDotDot)
 		self.setModel(mdl)
+		mdl.fileOperation.connect(self.modelFileOperation)
 
 		for col in range(1, self.header().count()):
 			self.setColumnHidden(col, True)
@@ -70,7 +128,7 @@ class DirTreeView(QTreeView):
 
 		new = current.with_name(new)
 
-		move_folder(current, new, db)
+		rename_folder(current, new, db)
 		self.selectPath(str(new))
 
 	def pasteFiles(self):
@@ -83,6 +141,15 @@ class DirTreeView(QTreeView):
 		treeop = FileOperation(target, files, op, self.window().db)
 		dlg = FileOperationProgress(self)
 		dlg.setOp(treeop)
+		dlg.show()
+		dlg.open()
+
+	@Slot(FileOperation)
+	def modelFileOperation(self, treeop):
+		treeop.db = self.window().db
+		dlg = FileOperationProgress(self)
+		dlg.setOp(treeop)
+		treeop.setParent(dlg)
 		dlg.show()
 		dlg.open()
 		treeop.start()

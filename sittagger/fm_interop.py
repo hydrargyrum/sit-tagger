@@ -45,6 +45,13 @@ def _mark_for(files, op, cls):
     })
 
 
+def _parse_url(url):
+    url = urlparse(url)
+    if url.scheme != "file":
+        raise Error("url %r does not have file:// scheme" % url.geturl())
+    return Path(unquote(url.path))
+
+
 def get_files_clipboard(cls, default_op=None):
     try:
         op, *urls = cls.get_clipboard(MIME_GNOME).split("\n")
@@ -65,9 +72,6 @@ def get_files_clipboard(cls, default_op=None):
 
     paths = []
     for url in urls:
-        url = urlparse(url)
-        if url.scheme != "file":
-            raise Error("url %r does not have file:// scheme" % url.geturl())
-        paths.append(Path(unquote(url.path)))
+        paths.append(_parse_url(url))
 
     return op, paths
