@@ -2,8 +2,11 @@
 import os
 from pathlib import Path
 
-from PyQt5.QtCore import QSize, Qt, pyqtSlot as Slot, pyqtSignal as Signal
-from PyQt5.QtGui import QIcon, QPixmap, QKeySequence
+from PyQt5.QtCore import (
+	QSize, Qt, pyqtSlot as Slot, pyqtSignal as Signal, QAbstractListModel, QVariant,
+	QModelIndex,
+)
+from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QPixmapCache, QColor
 from PyQt5.QtWidgets import (
 	QListWidget, QListWidgetItem, QListView,
 	QAction, QInputDialog, QLineEdit,
@@ -15,41 +18,126 @@ from .fsops import move_file
 from . import thumbnailmaker
 
 
-class ThumbnailItem(QListWidgetItem):
-	def __init__(self, path, widget=None):
-		super(ThumbnailItem, self).__init__(os.path.basename(path), widget)
-		self.path = path
-		self.setData(Qt.UserRole, self.path)
+class AbstractFilesModel(QAbstractListModel):
+	emptypix = None
 
-		emptypix = QPixmap(QSize(256, 256))
-		emptypix.fill(self.listWidget().palette().window().color())
-		self.setIcon(QIcon(emptypix))
+	def __init__(self, parent=None):
+		super().__init__(parent)
 
-		thumbnailmaker.maker.addTask(self.path)
+		self.entries = []
+		self.thumbs = {}
 
-	def cancelThumbnail(self):
-		thumbnailmaker.maker.cancelTask(self.path)
+		thumbnailmaker.maker.done.connect(self.doneThumbnail)
+		if self.emptypix is None:
+			AbstractFilesModel.emptypix = QPixmap(QSize(256, 256))
+			AbstractFilesModel.emptypix.fill(QColor("gray"))
 
-	def getPath(self):
-		return self.path
+	def rowCount(self, qidx):
+		return len(self.entries)
 
-	def getPathObject(self):
-		return Path(self.getPath())
+	def data(self, qidx, role):
+		path = self.entries[qidx.row()]
 
-	def _updatePath(self, newpath):
-		self.path = newpath
-		self.setData(Qt.UserRole, self.path)
-		self.setText(Path(newpath).name)
+		if role == Qt.DisplayRole:
+			return QVariant(path.name)
+		elif role == Qt.DecorationRole:
+			try:
+				tpath = self.thumbs[str(path)]
+			except KeyError:
+				return QVariant(self.emptypix)
+			return QVariant(self._pixmap(tpath))
+		elif role == Qt.UserRole:
+			return QVariant(str(path))
+		else:
+			return QVariant()
+
+	def flags(self, qidx):
+		flags = super().flags(qidx)
+		if qidx.isValid():
+			flags |= (
+				Qt.ItemIsSelectable
+				| Qt.ItemIsEnabled
+				| Qt.ItemIsDragEnabled
+				| Qt.ItemNeverHasChildren
+			)
+		return flags
+
+	def _pixmap(self, path):
+		path = str(path)
+		pix = QPixmapCache.find(path)
+		if not pix or not pix.isNull():
+			pix = QPixmap(path)
+			QPixmapCache.insert(path, pix)
+
+		return pix
+
+	def clearEntries(self):
+		for path in self.entries:
+			thumbnailmaker.maker.cancelTask(str(path))
+
+		self.beginRemoveRows(QModelIndex(), 0, len(self.entries) - 1)
+		self.entries = []
+		self.thumbs = {}
+		self.endRemoveRows()
+
+	def setEntries(self, files):
+		self.beginInsertRows(QModelIndex(), 0, len(files) - 1)
+		self.entries = files
+		self.thumbs = {}
+		self.endInsertRows()
+
+		for path in self.entries:
+			thumbnailmaker.maker.addTask(str(path))
+
+	@Slot(str, str)
+	def doneThumbnail(self, origpath, thumbpath):
+		try:
+			idx = self.entries.index(Path(origpath))
+		except ValueError:
+			return
+
+		self.thumbs[origpath] = thumbpath
+
+		qidx = self.index(idx)
+		self.dataChanged.emit(qidx, qidx, [Qt.DecorationRole])
 
 
-class ImageList(QListWidget):
+class ThumbDirModel(AbstractFilesModel):
+	def __init__(self, parent=None):
+		super().__init__(parent)
+		self.path = None
+
+	def setPath(self, path):
+		self.clearEntries()
+
+		self.path = Path(path)
+
+		files = sorted(
+			filter(lambda p: p.is_file(), self.path.iterdir()),
+			key=lambda p: p.name
+		)
+		self.setEntries(files)
+
+
+class ThumbTagModel(AbstractFilesModel):
+	def __init__(self, db, parent=None):
+		super().__init__(parent)
+		self.db = db
+		self.tags = None
+
+	def setTags(self, tags):
+		self.clearEntries()
+		self.tags = tags
+
+		files = sorted(self.db.find_files_by_tags(tags), key=lambda p: p.name)
+		self.setEntries(files)
+
+
+class ImageList(QListView):
 	pasteRequested = Signal()
 
 	def __init__(self, *args, **kwargs):
 		super(ImageList, self).__init__(*args, **kwargs)
-		self.items = {}
-
-		thumbnailmaker.maker.done.connect(self._thumbnailDone)
 
 		action = QAction(parent=self)
 		action.setShortcut(QKeySequence("F2"))
@@ -75,43 +163,43 @@ class ImageList(QListWidget):
 		action.triggered.connect(self.pasteRequested)
 		self.addAction(action)
 
+	def selectionChanged(self, new, old):
+		self.itemSelectionChanged.emit()
+
+	itemSelectionChanged = Signal()
+
 	def showEvent(self, ev):
 		super().showEvent(ev)
 		self.verticalScrollBar().setSingleStep(32)
 
-	@Slot(str, str)
-	def _thumbnailDone(self, origpath, thumbpath):
-		if origpath not in self.items:
-			return
-		if thumbpath:
-			self.items[origpath].setIcon(QIcon(thumbpath))
+	def browseDir(self, path):
+		model = ThumbDirModel()
+		model.setPath(path)
+		self.setModel(model)
 
-	def removeItems(self):
-		for i in range(self.count()):
-			self.item(i).cancelThumbnail()
-		self.clear()
-
-	def setFiles(self, files):
-		self.removeItems()
-		self.items = {}
-
-		for f in files:
-			item = ThumbnailItem(f, self)
-			self.items[f] = item
+	def browseTags(self, tags):
+		model = ThumbTagModel(self.window().db)
+		model.setTags(tags)
+		self.setModel(model)
 
 	def getFiles(self):
-		return [self.item(i).getPath() for i in range(self.count())]
+		return list(map(str, self.model().entries))  # TODO this is too raw
+
+	def getCurrentFile(self):
+		return str(self.model().entries[self.selectionModel().currentIndex().row()])
 
 	@Slot()
 	def popRenameSelected(self):
+		raise NotImplementedError()
+
 		db = self.window().db
 
-		selected = self.selectedItems()
+		selected = self.selectedPaths()
 		if len(selected) != 1:
 			# cannot rename 0 or multiple files
 			return
 
-		current = selected[0].getPathObject().absolute()
+		current = selected[0]
 
 		new, ok = QInputDialog.getText(
 			self,
@@ -135,24 +223,30 @@ class ImageList(QListWidget):
 
 		move_file(current, new, db)
 
+		# TODO reimplement with new models
 		item = self.items.pop(str(current))
 		item._updatePath(str(new))
 		self.items[str(new)] = item
 
+	def selectedPaths(self):
+		return [Path(spath).absolute() for spath in self.selectedFiles()]
+
+	def selectedFiles(self):
+		return [
+			qidx.data(Qt.UserRole)
+			for qidx in self.selectedIndexes()
+		]
+
 	@Slot()
 	def markForCopy(self):
-		selected = self.selectedItems()
-		if not selected:
+		paths = self.selectedPaths()
+		if not paths:
 			return
-
-		paths = [obj.getPathObject().absolute() for obj in selected]
 		mark_for_copy(paths, ClipQt)
 
 	@Slot()
 	def markForCut(self):
-		selected = self.selectedItems()
-		if not selected:
+		paths = self.selectedPaths()
+		if not paths:
 			return
-
-		paths = [obj.getPathObject().absolute() for obj in selected]
 		mark_for_cut(paths, ClipQt)

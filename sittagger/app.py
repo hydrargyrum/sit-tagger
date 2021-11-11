@@ -66,7 +66,7 @@ class Win(Ui_MainWindow, QMainWindow):
 
 	def _init_imagelist(self):
 		self.imageList.itemSelectionChanged.connect(self._editTagsItems)
-		self.imageList.itemActivated.connect(self._spawnViewerItem)
+		self.imageList.activated.connect(self._spawnViewerItem)
 		self.imageList.setSelectionMode(QAbstractItemView.ExtendedSelection)
 		self.imageList.pasteRequested.connect(self._onListPaste)
 
@@ -97,11 +97,12 @@ class Win(Ui_MainWindow, QMainWindow):
 
 	@Slot()
 	def _editTagsItems(self):
-		self.editTagsItems([qitem.getPath() for qitem in self.imageList.selectedItems()])
+		self.editTagsItems(self.imageList.selectedFiles())
 
-	@Slot(QListWidgetItem)
-	def _spawnViewerItem(self, qitem):
-		self.spawnViewer(self.imageList.getFiles(), qitem.getPath())
+	@Slot()
+	def _spawnViewerItem(self):
+		files = self.imageList.getFiles()
+		self.spawnViewer(self.imageList.getFiles(), self.imageList.getCurrentFile())
 
 	@Slot()
 	def browseSelectedDir(self):
@@ -110,16 +111,12 @@ class Win(Ui_MainWindow, QMainWindow):
 			return
 
 		self.setWindowTitle(str(path))
-
-		files = [os.path.join(path, f) for f in os.listdir(path)]
-		files = [f for f in files if os.path.isfile(f)]
-		files.sort()
-		self.imageList.setFiles(files)
+		self.imageList.browseDir(path)
 
 	@Slot()
 	def browseSelectedTags(self):
 		self.setWindowTitle(' + '.join(self.tagChooser.selectedTags()))
-		self.imageList.setFiles(self.tagChooser.matchingFiles())
+		self.imageList.browseTags(self.tagChooser.selectedTags())
 
 	@Slot(int)
 	def _tabSelected(self, idx):
@@ -129,8 +126,7 @@ class Win(Ui_MainWindow, QMainWindow):
 			self.browseSelectedTags()
 
 	def browsePath(self, path):
-		self.imageList.setFiles(os.path.join(path, f) for f in os.listdir(path))
-
+		self.imageList.browseDir(path)
 
 	@Slot()
 	def _onListPaste(self):
