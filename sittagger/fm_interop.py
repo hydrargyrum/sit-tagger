@@ -38,7 +38,7 @@ def mark_for_cut(files, cls):
 def _mark_for(files, op, cls):
     urls = [file.absolute().as_uri() for file in files]
     cls.set_clipboard(MIME_TEXT, "\n".join(urls))
-    cls.set_clipboard(MIME_LIST, "\n".join(urls))
+    cls.set_clipboard(MIME_LIST, "\r\n".join(urls) + "\r\n")  # requires a trailing newline
     cls.set_clipboard(MIME_GNOME, "\n".join([op] + urls))
 
 
@@ -46,7 +46,7 @@ def get_files_clipboard(cls, default_op=None):
     try:
         op, *urls = cls.get_clipboard(MIME_GNOME).split("\n")
     except ValueError:
-        urls = cls.get_clipboard(MIME_LIST).split("\n")
+        urls = cls.get_clipboard(MIME_LIST).strip().split("\r\n")
 
         if len(urls) == 1 and not urls[0]:
             # "".split("\n") == [""]
