@@ -140,19 +140,18 @@ class DirTreeView(QTreeView):
 
 		treeop = FileOperation(target, files, op, self.window().db)
 		dlg = FileOperationProgress(self)
+		treeop.setParent(dlg)
 		dlg.setOp(treeop)
-		dlg.show()
-		dlg.open()
+		dlg.start()
 
 	@Slot(FileOperation)
 	def modelFileOperation(self, treeop):
 		treeop.db = self.window().db
 		dlg = FileOperationProgress(self)
 		dlg.setOp(treeop)
+		dlg.setModal(True)
 		treeop.setParent(dlg)
-		dlg.show()
-		dlg.open()
-		treeop.start()
+		dlg.start()
 
 
 class FileOperationProgress(QProgressDialog):
@@ -161,6 +160,7 @@ class FileOperationProgress(QProgressDialog):
 		self.setAutoReset(False)
 		self.setAutoClose(False)
 		self.setMinimumDuration(0)
+		self.setModal(True)
 		self.finished.connect(self.deleteLater)
 		self.op = None
 
@@ -176,3 +176,8 @@ class FileOperationProgress(QProgressDialog):
 		print(name, current)
 		self.setLabelText(name)
 		self.setValue(current * 100 // total)
+
+	def start(self):
+		self.show()
+		self.open()
+		self.op.start()
