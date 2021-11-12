@@ -17,10 +17,11 @@ class Error(Exception):
 
 class ClipQt:
     @staticmethod
-    def set_clipboard(mime, data):
-        mimeobj = QMimeData()
-        mimeobj.setData(mime, data.encode("utf-8"))
-        QGuiApplication.clipboard().setMimeData(mimeobj)
+    def set_clipboard(mimes):
+        qmime = QMimeData()
+        for mime, data in mimes.items():
+            qmime.setData(mime, data.encode("utf-8"))
+        QGuiApplication.clipboard().setMimeData(qmime)
 
     @staticmethod
     def get_clipboard(mime):
@@ -37,9 +38,11 @@ def mark_for_cut(files, cls):
 
 def _mark_for(files, op, cls):
     urls = [file.absolute().as_uri() for file in files]
-    cls.set_clipboard(MIME_TEXT, "\n".join(urls))
-    cls.set_clipboard(MIME_LIST, "\r\n".join(urls) + "\r\n")  # requires a trailing newline
-    cls.set_clipboard(MIME_GNOME, "\n".join([op] + urls))
+    cls.set_clipboard({
+        MIME_TEXT: "\n".join(urls),
+        MIME_LIST: "\r\n".join(urls) + "\r\n",  # requires a trailing newline
+        MIME_GNOME: "\n".join([op] + urls),
+    })
 
 
 def get_files_clipboard(cls, default_op=None):
