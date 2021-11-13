@@ -5,9 +5,10 @@ from PyQt5.QtCore import QDir, pyqtSlot as Slot, Qt, pyqtSignal as Signal, QMime
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
 	QTreeView, QFileSystemModel, QAction, QInputDialog, QLineEdit,
-	QMessageBox, QProgressDialog,
+	QMessageBox,
 )
 
+from .fileoperationdialog import FileOperationProgressDialog
 from .fsops import rename_folder, FileOperation
 from .fm_interop import ClipQt, get_files_clipboard, MIME_LIST, _parse_url
 
@@ -139,7 +140,7 @@ class DirTreeView(QTreeView):
 		assert op in ("copy", "cut")
 
 		treeop = FileOperation(target, files, op, self.window().db)
-		dlg = FileOperationProgress(self)
+		dlg = FileOperationProgressDialog(self)
 		treeop.setParent(dlg)
 		dlg.setOp(treeop)
 		dlg.start()
@@ -147,37 +148,8 @@ class DirTreeView(QTreeView):
 	@Slot(FileOperation)
 	def modelFileOperation(self, treeop):
 		treeop.db = self.window().db
-		dlg = FileOperationProgress(self)
+		dlg = FileOperationProgressDialog(self)
 		dlg.setOp(treeop)
 		dlg.setModal(True)
 		treeop.setParent(dlg)
 		dlg.start()
-
-
-class FileOperationProgress(QProgressDialog):
-	def __init__(self, parent):
-		super().__init__(parent)
-		self.setAutoReset(False)
-		self.setAutoClose(False)
-		self.setMinimumDuration(0)
-		self.setModal(True)
-		self.finished.connect(self.deleteLater)
-		self.op = None
-
-	def setOp(self, op):
-		self.op = op
-		self.op.processing.connect(self.onProgress)
-		self.op.started.connect(self.exec_)
-		self.op.finished.connect(self.accept)
-		self.canceled.connect(self.op.cancel)
-
-	@Slot(str, int, int)
-	def onProgress(self, name, current, total):
-		print(name, current)
-		self.setLabelText(name)
-		self.setValue(current * 100 // total)
-
-	def start(self):
-		self.show()
-		self.open()
-		self.op.start()
