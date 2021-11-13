@@ -4,7 +4,7 @@ from pathlib import Path
 
 from PyQt5.QtCore import (
 	QSize, Qt, pyqtSlot as Slot, pyqtSignal as Signal, QAbstractListModel, QVariant,
-	QModelIndex,
+	QModelIndex, QMimeData,
 )
 from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QPixmapCache, QColor
 from PyQt5.QtWidgets import (
@@ -13,8 +13,9 @@ from PyQt5.QtWidgets import (
 	QMessageBox,
 )
 
-from .fm_interop import mark_for_copy, mark_for_cut, ClipQt
-from .fsops import move_file
+from .fileoperationdialog import FileOperationProgressDialog
+from .fm_interop import mark_for_copy, mark_for_cut, ClipQt, MIME_LIST, _parse_url
+from .fsops import move_file, FileOperation
 from . import thumbnailmaker
 
 
@@ -107,6 +108,12 @@ class ThumbDirModel(AbstractFilesModel):
 		super().__init__(parent)
 		self.path = None
 
+	def flags(self, qidx):
+		flags = super().flags(qidx)
+		if not qidx.isValid():
+			flags |= Qt.ItemIsDropEnabled
+		return flags
+
 	def setPath(self, path):
 		self.clearEntries()
 
@@ -117,6 +124,52 @@ class ThumbDirModel(AbstractFilesModel):
 			key=lambda p: p.name
 		)
 		self.setEntries(files)
+
+	def mimeTypes(self):
+		return [MIME_LIST]
+
+	def mimeData(self, qindexes):
+		ret = QMimeData()
+		ret.setData(
+			MIME_LIST,
+			b"\r\n".join(
+				self.entries[qidx.row()].absolute().as_uri().encode("ascii")
+				for qidx in qindexes
+			) + b"\r\n"
+		)
+		return ret
+
+	def supportedDropActions(self):
+		return Qt.CopyAction | Qt.MoveAction
+
+	def canDropMimeData(self, qmime, action, row, column, parent_qidx):
+		if column > 0:
+			return False
+
+		return super().canDropMimeData(qmime, action, row, column, parent_qidx)
+
+	def dropMimeData(self, qmime, action, row, column, parent_qidx):
+		if not self.canDropMimeData(qmime, action, row, column, parent_qidx):
+			return False
+
+		urls = bytes(qmime.data(MIME_LIST)).decode("ascii").rstrip().split("\r\n")
+		files = [_parse_url(url) for url in urls]
+		files = [src for src in files if src.parent != self.path]
+
+		if action == Qt.MoveAction:
+			op = "cut"
+		elif action == Qt.CopyAction:
+			op = "copy"
+		else:
+			raise NotImplementedError()
+
+		treeop = FileOperation(self.path, files, op, db=None)
+		self.fileOperation.emit(treeop)
+
+		# this is actually fake, the operation has not finished yet
+		return True
+
+	fileOperation = Signal(FileOperation)
 
 
 class ThumbTagModel(AbstractFilesModel):
@@ -174,6 +227,7 @@ class ImageList(QListView):
 
 	def browseDir(self, path):
 		model = ThumbDirModel()
+		model.fileOperation.connect(self.modelFileOperation)
 		model.setPath(path)
 		self.setModel(model)
 
@@ -250,3 +304,12 @@ class ImageList(QListView):
 		if not paths:
 			return
 		mark_for_cut(paths, ClipQt)
+
+	@Slot(FileOperation)
+	def modelFileOperation(self, treeop):
+		treeop.db = self.window().db
+		dlg = FileOperationProgressDialog(self)
+		dlg.setOp(treeop)
+		dlg.setModal(True)
+		treeop.setParent(dlg)
+		dlg.start()
