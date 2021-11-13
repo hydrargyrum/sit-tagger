@@ -11,6 +11,13 @@ import vignette
 _os_rename = os.rename
 
 
+def _call_log_exc(func, *args, **kwargs):
+	try:
+		return func(*args, **kwargs)
+	except Exception as exc:
+		LOGGER.info("failed calling %s: %s", func, exc)
+
+
 def _get_dev(path):
 	return path.lstat().st_dev
 
@@ -33,7 +40,7 @@ def _rename_with_thumb(src, dst):
 THUMB_SIZES = ("normal", "large")
 
 
-def _pre_rename_thumb(src):
+def _pre_copy_thumb(src):
 	if isinstance(src, Path):
 		src = str(src)
 
@@ -49,7 +56,10 @@ def _pre_rename_thumb(src):
 	return thumbs
 
 
-def _post_rename_thumb(thumbs, dst):
+def _post_copy_thumb(thumbs, dst):
+	if thumbs is None:
+		return
+
 	if isinstance(dst, Path):
 		dst = str(dst)
 
@@ -64,11 +74,13 @@ def move_file(old, new, db):
 	if _get_dev(old) != _get_dev(new.parent):
 		raise NotImplementedError()
 
-	thumbs = _pre_rename_thumb(old)
+	thumbs = _call_log_exc(_pre_copy_thumb, old)
+
 	_os_rename(str(old), str(new))
 	with db:
 		db.rename_file(str(old), str(new))
-	_post_rename_thumb(thumbs, new)
+
+	_call_log_exc(_post_copy_thumb, thumbs, new)
 
 
 def _scan_thumbs(path):
@@ -135,7 +147,7 @@ class FileOperation(QThread):
 			if is_dir:
 				thumbs_inodes = _scan_thumbs(src)
 			else:
-				thumbs = _pre_rename_thumb(src)
+				thumbs = _call_log_exc(_pre_copy_thumb, src)
 
 		shutil.move(src, dst, copy_function=self._copy_for_move)
 
@@ -147,14 +159,15 @@ class FileOperation(QThread):
 			else:
 				with self.db:
 					self.db.rename_file(src, dst)
-				_post_rename_thumb(thumbs, dst)
+
+				_call_log_exc(_post_copy_thumb, thumbs, dst)
 
 	def _copy_for_move(self, src, dst):
-		thumbs = _pre_rename_thumb(src)
+		thumbs = _call_log_exc(_pre_copy_thumb, src)
 		self._copy(src, dst)
 		with self.db:
 			self.db.rename_file(src, dst)
-		_post_rename_thumb(thumbs, dst)
+		_call_log_exc(_post_copy_thumb, thumbs, dst)
 
 	def _copy(self, src, dst):
 		if self.is_cancelled.is_set():
