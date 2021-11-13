@@ -163,15 +163,15 @@ class FileOperation(QThread):
 				_call_log_exc(_post_copy_thumb, thumbs, dst)
 
 	def _copy_for_move(self, src, dst):
-		thumbs = _call_log_exc(_pre_copy_thumb, src)
 		self._copy(src, dst)
 		with self.db:
 			self.db.rename_file(src, dst)
-		_call_log_exc(_post_copy_thumb, thumbs, dst)
 
 	def _copy(self, src, dst):
 		if self.is_cancelled.is_set():
 			raise Cancelled()
+
+		thumbs = _call_log_exc(_pre_copy_thumb, src)
 
 		total = os.path.getsize(src)
 		current = 0
@@ -195,6 +195,7 @@ class FileOperation(QThread):
 				self.processing.emit(str(src), current, total)
 
 		shutil.copystat(src, dst)
+		_call_log_exc(_post_copy_thumb, thumbs, dst)
 
 	def run(self):
 		names = {src.name for src in self.sources}
