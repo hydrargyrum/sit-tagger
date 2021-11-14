@@ -72,7 +72,7 @@ def _post_copy_thumb(thumbs, dst):
 		vignette.put_thumbnail(dst, sz, tsrc)
 
 
-def move_file(old, new, db):
+def rename_file(old, new, db):
 	old = Path(old).absolute()
 	new = Path(new).absolute()
 

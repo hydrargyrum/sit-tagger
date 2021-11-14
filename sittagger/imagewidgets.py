@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (
 
 from .fileoperationdialog import FileOperationProgressDialog
 from .fm_interop import mark_for_copy, mark_for_cut, ClipQt, MIME_LIST, _parse_url
-from .fsops import move_file, FileOperation
+from .fsops import rename_file, FileOperation
 from . import thumbnailmaker
 
 
@@ -251,8 +251,6 @@ class ImageList(QListView):
 
 	@Slot()
 	def popRenameSelected(self):
-		raise NotImplementedError()
-
 		db = self.window().db
 
 		selected = self.selectedPaths()
@@ -282,12 +280,8 @@ class ImageList(QListView):
 
 		new = current.with_name(new)
 
-		move_file(current, new, db)
-
-		# TODO reimplement with new models
-		item = self.items.pop(str(current))
-		item._updatePath(str(new))
-		self.items[str(new)] = item
+		rename_file(current, new, db)
+		# TODO update model
 
 	def selectedPaths(self):
 		return [Path(spath).absolute() for spath in self.selectedFiles()]
