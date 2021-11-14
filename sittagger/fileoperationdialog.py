@@ -28,3 +28,8 @@ class FileOperationProgressDialog(QProgressDialog):
 		self.show()
 		self.open()
 		self.op.start()
+
+	def showEvent(self, ev):
+		super().showEvent(ev)
+		if self.op.isFinished():
+			self.accept()
