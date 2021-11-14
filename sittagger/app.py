@@ -31,7 +31,7 @@ def load_ui_class(package, module_name, class_name):
 		return getattr(mod, class_name)
 
 
-Ui_MainWindow = load_ui_class('sittagger', 'mainwindow', 'MainWindow')
+Ui_MainWindow = load_ui_class('sittagger', 'mainwindow', 'Ui_MainWindow')
 
 
 class Win(Ui_MainWindow, QMainWindow):
