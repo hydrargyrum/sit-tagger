@@ -1,16 +1,13 @@
 
-import os
 from pathlib import Path
 
 from PyQt5.QtCore import (
 	QSize, Qt, pyqtSlot as Slot, pyqtSignal as Signal, QAbstractListModel, QVariant,
 	QModelIndex, QMimeData,
 )
-from PyQt5.QtGui import QIcon, QPixmap, QKeySequence, QPixmapCache, QColor
+from PyQt5.QtGui import QPixmap, QKeySequence, QPixmapCache, QColor
 from PyQt5.QtWidgets import (
-	QListWidget, QListWidgetItem, QListView,
-	QAction, QInputDialog, QLineEdit,
-	QMessageBox,
+	QListView, QAction, QInputDialog, QLineEdit, QMessageBox,
 )
 
 from .fileoperationdialog import FileOperationProgressDialog
