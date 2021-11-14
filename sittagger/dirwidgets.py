@@ -63,7 +63,7 @@ class FSModelWithDND(QFileSystemModel):
 		if not self.canDropMimeData(qmime, action, row, column, parent_qidx):
 			return False
 
-		files = self._getDroppedPaths(qmime)
+		files = self._getDroppedPaths(qmime, parent_qidx)
 
 		parent_path = Path(self.filePath(parent_qidx))
 
