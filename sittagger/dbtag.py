@@ -1,4 +1,5 @@
 
+from pathlib import Path
 import sqlite3
 
 
@@ -6,6 +7,12 @@ def iter2list(func):
 	def wrapper(*args, **kwargs):
 		return list(func(*args, **kwargs))
 	return wrapper
+
+
+def from_path(path):
+	if isinstance(path, Path):
+		return str(path.absolute())
+	return path
 
 
 class Db(object):
@@ -30,6 +37,7 @@ class Db(object):
 		return self.db.__exit__(*args)
 
 	def remove_file(self, path):
+		path = from_path(path)
 		self.db.execute('delete from tags_files where file = ?', (path,))
 
 	def remove_tag(self, name):
@@ -39,9 +47,14 @@ class Db(object):
 		self.db.execute('update tags_files set tag = ? where tag = ?', (new, old))
 
 	def rename_file(self, old, new):
+		old = from_path(old)
+		new = from_path(new)
 		self.db.execute('update tags_files set file = ? where file = ?', (new, old))
 
 	def rename_folder(self, old, new):
+		old = from_path(old)
+		new = from_path(new)
+
 		# force slashes to avoid matching /aaabbb with /aaa pattern but only /aaa/bbb
 		old = old + '/'
 		new = new + '/'
@@ -59,6 +72,7 @@ class Db(object):
 	def tag_file(self, path, tags, start=None, end=None):
 		if isinstance(tags, str):
 			tags = [tags]
+		path = from_path(path)
 
 		for tag in tags:
 			self.db.execute('insert or replace into tags_files (file, tag, start, end) values (?, ?, ?, ?)',
@@ -67,16 +81,13 @@ class Db(object):
 	def untag_file(self, path, tags):
 		if isinstance(tags, str):
 			tags = [tags]
+		path = from_path(path)
 
 		for tag in tags:
 			self.db.execute('delete from tags_files where file = ? and tag = ?',
 					(path, tag))
 
-	def untrack_file(self, path):
-		self.db.execute(
-			'delete from tags_files where file = ?',
-			(path,)
-		)
+	untrack_file = remove_file
 
 	def list_tags(self):
 		for row in self.db.execute('select distinct tag from tags_files'):
@@ -88,6 +99,7 @@ class Db(object):
 
 	@iter2list
 	def find_tags_by_file(self, path):
+		path = from_path(path)
 		for row in self.db.execute('select distinct tag from tags_files where file = ?', (path,)):
 			yield row[0]
 
@@ -103,6 +115,7 @@ class Db(object):
 
 	@iter2list
 	def get_extras_for_file(self, path, tag):
+		path = from_path(path)
 		for row in self.db.execute('select start, end from tags_files where file = ? and tag = ?',
 					   (path, tag)):
 			yield row[0], row[1]
