@@ -9,13 +9,14 @@ def iter2list(func):
 
 
 class Db(object):
-	def __init__(self):
+	def __init__(self, multithread=False):
 		self.db = None
 		self.db_path = None
+		self.multithread = multithread
 
 	def open(self, path):
 		self.db_path = path
-		self.db = sqlite3.connect(path)
+		self.db = sqlite3.connect(path, check_same_thread=not self.multithread)
 
 	def close(self):
 		self.db_path = None

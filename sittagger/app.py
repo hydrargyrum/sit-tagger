@@ -43,7 +43,7 @@ class Win(Ui_MainWindow, QMainWindow):
 			str(Path(__file__).parent.with_name("sittagger.png"))
 		)))
 
-		self.db = dbtag.Db()
+		self.db = dbtag.Db(multithread=True)
 		self.db.open(options.db)
 		self.db.do_migrations()
 		self.rootPath = options.filespath
