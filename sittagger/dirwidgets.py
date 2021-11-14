@@ -93,11 +93,18 @@ class DirTreeView(QTreeView):
 		for col in range(1, self.header().count()):
 			self.setColumnHidden(col, True)
 
-		action = QAction(parent=self)
+		# actions
+		action = QAction(self.tr("&Rename folder..."), self)
 		action.setShortcut(QKeySequence("F2"))
 		action.setShortcutContext(Qt.WidgetShortcut)
 		action.triggered.connect(self.popRenameSelected)
 		self.addAction(action)
+
+		act = QAction(self.tr("&Create folder..."), self)
+		act.triggered.connect(self._createFolder)
+		self.addAction(act)
+
+		self.setContextMenuPolicy(Qt.ActionsContextMenu)
 
 	def setRootPath(self, path):
 		self.root_path = path
@@ -164,3 +171,27 @@ class DirTreeView(QTreeView):
 		dlg.setModal(True)
 		treeop.setParent(dlg)
 		dlg.start()
+
+	@Slot()
+	def _createFolder(self):
+		current = Path(self.selectedPath()).absolute()
+
+		new, ok = QInputDialog.getText(
+			self,
+			self.tr("Create directory"),
+			self.tr("Name for new directory"),
+			QLineEdit.Normal,
+			self.tr("new_folder")
+		)
+
+		if not ok or not new:
+			return
+		if "/" in new:
+			QMessageBox.critical(
+				self,
+				self.tr("Error"),
+				self.tr("New name %r cannot contain '/'") % new,
+			)
+			return
+
+		current.joinpath(new).mkdir()
