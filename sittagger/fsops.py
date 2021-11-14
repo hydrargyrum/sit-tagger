@@ -137,9 +137,9 @@ class FileOperation(QThread):
 	def copytree(self, src, dst):
 		shutil.copytree(src, dst, copy=self._copy)
 
-	def movetree(self, src, dst):
+	def movetree(self, src, dstdir):
 		is_dir = src.is_dir()
-		xdev = _get_dev(src) != _get_dev(dst)
+		xdev = _get_dev(src) != _get_dev(dstdir)
 
 		thumbs_inodes = None
 		thumbs = None
@@ -149,18 +149,21 @@ class FileOperation(QThread):
 			else:
 				thumbs = _call_log_exc(_pre_copy_thumb, src)
 
-		shutil.move(src, dst, copy_function=self._copy_for_move)
+		shutil.move(src, dstdir, copy_function=self._copy_for_move)
 
 		if not xdev:
+			dstentry = dstdir.joinpath(src.name)
+
 			if is_dir:
 				with self.db:
-					self.db.rename_folder(src, dst)
-				_restore_thumbs(dst, thumbs_inodes)
+					self.db.rename_folder(src, dstentry)
+
+				_restore_thumbs(dstentry, thumbs_inodes)
 			else:
 				with self.db:
-					self.db.rename_file(src, dst)
+					self.db.rename_file(src, dstentry)
 
-				_call_log_exc(_post_copy_thumb, thumbs, dst)
+				_call_log_exc(_post_copy_thumb, thumbs, dstentry)
 
 	def _copy_for_move(self, src, dst):
 		self._copy(src, dst)
