@@ -3,6 +3,7 @@ from logging import getLogger
 import os
 from pathlib import Path
 import shutil
+import subprocess
 from threading import Event
 
 from PyQt5.QtCore import QThread, pyqtSignal as Signal, pyqtSlot as Slot
@@ -237,3 +238,12 @@ class FileOperation(QThread):
 	@Slot()
 	def cancel(self):
 		self.is_cancelled.set()
+
+
+def can_trash():
+	return bool(shutil.which("trash-put"))
+
+
+def trash_items(paths):
+	LOGGER.info("sending %s to trash", paths)
+	subprocess.run(["trash-put", "-v", *map(str, paths)])

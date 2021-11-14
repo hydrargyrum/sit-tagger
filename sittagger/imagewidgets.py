@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (
 
 from .fileoperationdialog import FileOperationProgressDialog
 from .fm_interop import mark_for_copy, mark_for_cut, ClipQt, MIME_LIST, _parse_url
-from .fsops import rename_file, FileOperation
+from .fsops import rename_file, FileOperation, trash_items, can_trash
 from . import thumbnailmaker
 
 
@@ -223,6 +223,12 @@ class ImageList(QListView):
 		action.triggered.connect(self.pasteRequested)
 		self.addAction(action)
 
+		action = QAction(parent=self)
+		action.setShortcut(QKeySequence(QKeySequence.Delete))
+		action.setShortcutContext(Qt.WidgetShortcut)
+		action.triggered.connect(self.trashSelected)
+		self.addAction(action)
+
 	def selectionChanged(self, new, old):
 		self.itemSelectionChanged.emit()
 
@@ -314,3 +320,24 @@ class ImageList(QListView):
 		dlg.setModal(True)
 		treeop.setParent(dlg)
 		dlg.start()
+
+	@Slot()
+	def trashSelected(self):
+		paths = self.selectedPaths()
+		if not can_trash():
+			QMessageBox.error(
+				self,
+				self.tr("Trash error"),
+				self.tr("trash-put is not installed, cannot trash files"),
+			)
+			return
+
+		button = QMessageBox.question(
+			self,
+			self.tr("Send to trash?"),
+			self.tr("Are you sure you want to send %d item(s) to trash?") % len(paths),
+		)
+		if button != QMessageBox.Yes:
+			return
+
+		trash_items(paths)
