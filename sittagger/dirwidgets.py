@@ -43,7 +43,19 @@ class FSModelWithDND(QFileSystemModel):
 			# row is >= 0 when pointing between rows
 			return False
 
+		files = self._getDroppedPaths(qmime, parent_qidx)
+		if not files:
+			return False
+
 		return super().canDropMimeData(qmime, action, row, column, parent_qidx)
+
+	def _getDroppedPaths(self, qmime, parent_qidx):
+		parent_path = Path(self.filePath(parent_qidx))
+
+		urls = bytes(qmime.data(MIME_LIST)).decode("ascii").rstrip().split("\r\n")
+		files = [_parse_url(url) for url in urls]
+		files = [src for src in files if src.parent != parent_path]
+		return files
 
 	fileOperation = Signal(FileOperation)
 
@@ -51,8 +63,7 @@ class FSModelWithDND(QFileSystemModel):
 		if not self.canDropMimeData(qmime, action, row, column, parent_qidx):
 			return False
 
-		urls = bytes(qmime.data(MIME_LIST)).decode("ascii").rstrip().split("\r\n")
-		files = [_parse_url(url) for url in urls]
+		files = self._getDroppedPaths(qmime)
 
 		parent_path = Path(self.filePath(parent_qidx))
 

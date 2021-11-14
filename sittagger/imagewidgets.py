@@ -143,15 +143,25 @@ class ThumbDirModel(AbstractFilesModel):
 		if column > 0:
 			return False
 
+		files = self._getDroppedPaths(qmime)
+		if not files:
+			return False
+
 		return super().canDropMimeData(qmime, action, row, column, parent_qidx)
+
+	def _getDroppedPaths(self, qmime):
+		urls = bytes(qmime.data(MIME_LIST)).decode("ascii").rstrip().split("\r\n")
+		files = [_parse_url(url) for url in urls]
+		files = [src for src in files if src.parent != self.path]
+		return files
 
 	def dropMimeData(self, qmime, action, row, column, parent_qidx):
 		if not self.canDropMimeData(qmime, action, row, column, parent_qidx):
 			return False
 
-		urls = bytes(qmime.data(MIME_LIST)).decode("ascii").rstrip().split("\r\n")
-		files = [_parse_url(url) for url in urls]
-		files = [src for src in files if src.parent != self.path]
+		files = self._getDroppedPaths(qmime)
+		if not files:
+			return False
 
 		if action == Qt.MoveAction:
 			op = "cut"
