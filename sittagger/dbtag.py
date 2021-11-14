@@ -1,6 +1,10 @@
 
+from logging import getLogger
 from pathlib import Path
 import sqlite3
+
+
+LOGGER = getLogger(__name__)
 
 
 def iter2list(func):
@@ -37,21 +41,26 @@ class Db(object):
 		return self.db.__exit__(*args)
 
 	def remove_file(self, path):
+		LOGGER.info("untracking file %r", path)
 		path = from_path(path)
 		self.db.execute('delete from tags_files where file = ?', (path,))
 
 	def remove_tag(self, name):
+		LOGGER.info("untracking tag %r", name)
 		self.db.execute('delete from tags_files where tag = ?', (name,))
 
 	def rename_tag(self, old, new):
+		LOGGER.info("renaming tag %r to %r", old, new)
 		self.db.execute('update tags_files set tag = ? where tag = ?', (new, old))
 
 	def rename_file(self, old, new):
+		LOGGER.info("renaming file %r to %r", old, new)
 		old = from_path(old)
 		new = from_path(new)
 		self.db.execute('update tags_files set file = ? where file = ?', (new, old))
 
 	def rename_folder(self, old, new):
+		LOGGER.info("renaming folder %r to %r", old, new)
 		old = from_path(old)
 		new = from_path(new)
 
@@ -70,6 +79,8 @@ class Db(object):
 		)
 
 	def tag_file(self, path, tags, start=None, end=None):
+		LOGGER.info("tagging file: %r + %r", path, tags)
+
 		if isinstance(tags, str):
 			tags = [tags]
 		path = from_path(path)
@@ -79,6 +90,8 @@ class Db(object):
 					(path, tag, start, end))
 
 	def untag_file(self, path, tags):
+		LOGGER.info("untagging file: %r - %r", path, tags)
+
 		if isinstance(tags, str):
 			tags = [tags]
 		path = from_path(path)
@@ -129,6 +142,7 @@ class Db(object):
 			base_version = row[0]
 
 		for ver in range(base_version, max(UPGRADES) + 1):
+			LOGGER.debug("database migration for version %r", ver)
 			with self.db:
 				for stmt in UPGRADES[ver]:
 					self.db.execute(stmt)
