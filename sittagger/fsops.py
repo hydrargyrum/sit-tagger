@@ -1,4 +1,5 @@
 
+from logging import getLogger
 import os
 from pathlib import Path
 import shutil
@@ -6,6 +7,9 @@ from threading import Event
 
 from PyQt5.QtCore import QThread, pyqtSignal as Signal, pyqtSlot as Slot
 import vignette
+
+
+LOGGER = getLogger(__name__)
 
 
 _os_rename = os.rename
@@ -64,6 +68,7 @@ def _post_copy_thumb(thumbs, dst):
 		dst = str(dst)
 
 	for sz, tsrc in thumbs.items():
+		LOGGER.debug("copying old thumb of %r: %r", dst, tsrc)
 		vignette.put_thumbnail(dst, sz, tsrc)
 
 
