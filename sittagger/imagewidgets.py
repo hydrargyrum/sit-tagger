@@ -201,7 +201,8 @@ class ThumbTagModel(AbstractFilesModel):
 		self.clearEntries()
 		self.tags = tags
 
-		files = sorted(self.db.find_files_by_tags(tags), key=lambda p: p.name)
+		files = [Path(fn) for fn in self.db.find_files_by_tags(tags)]
+		files = sorted(files, key=lambda p: key_name_ints(p.name.lower()))
 		self.setEntries(files)
 
 
