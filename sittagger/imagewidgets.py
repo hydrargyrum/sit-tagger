@@ -1,5 +1,6 @@
 
 from pathlib import Path
+import re
 
 from PyQt5.QtCore import (
 	QSize, Qt, pyqtSlot as Slot, pyqtSignal as Signal, QAbstractListModel, QVariant,
@@ -100,6 +101,17 @@ class AbstractFilesModel(QAbstractListModel):
 		self.dataChanged.emit(qidx, qidx, [Qt.DecorationRole])
 
 
+def key_name_ints(name):
+	parts = []
+	for mtc in re.finditer("(\d+)|(\D+)", name):
+		if mtc[1]:
+			parts.append((0, int(mtc[1])))
+		else:
+			assert mtc[2]
+			parts.append((1, mtc[2]))
+	return tuple(parts)
+
+
 class ThumbDirModel(AbstractFilesModel):
 	def __init__(self, parent=None):
 		super().__init__(parent)
@@ -118,7 +130,7 @@ class ThumbDirModel(AbstractFilesModel):
 
 		files = sorted(
 			filter(lambda p: p.is_file(), self.path.iterdir()),
-			key=lambda p: p.name
+			key=lambda p: key_name_ints(p.name.lower())
 		)
 		self.setEntries(files)
 
