@@ -37,6 +37,17 @@ class AbstractFilesModel(QAbstractListModel):
 			AbstractFilesModel.emptypix = QPixmap(QSize(256, 256))
 			AbstractFilesModel.emptypix.fill(QColor("gray"))
 
+	def __del__(self):
+		try:
+			self._cancelThumbnails()
+		except Exception:
+			# in python, __del__ must not raise exceptions
+			pass
+
+	def _cancelThumbnails(self):
+		for path in self.entries:
+			thumbnailmaker.maker.cancelTask(str(path))
+
 	def rowCount(self, qidx):
 		return len(self.entries)
 
@@ -77,8 +88,7 @@ class AbstractFilesModel(QAbstractListModel):
 		return pix
 
 	def clearEntries(self):
-		for path in self.entries:
-			thumbnailmaker.maker.cancelTask(str(path))
+		self._cancelThumbnails()
 
 		self.beginRemoveRows(QModelIndex(), 0, len(self.entries) - 1)
 		self.entries = []
@@ -86,6 +96,8 @@ class AbstractFilesModel(QAbstractListModel):
 		self.endRemoveRows()
 
 	def setEntries(self, files):
+		assert not self.entries, "there must be 0 entries before calling setEntries"
+
 		self.beginInsertRows(QModelIndex(), 0, len(files) - 1)
 		self.entries = files
 		self.thumbs = {}
