@@ -1,4 +1,5 @@
 
+from collections import OrderedDict
 import sys
 
 from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, QProcess, QThread
@@ -9,7 +10,7 @@ class ThumbnailMaker(QObject):
 
 	def __init__(self, *args, **kwargs):
 		super(ThumbnailMaker, self).__init__(*args, **kwargs)
-		self.queue = []
+		self.queue = OrderedDict()
 		self.running = 0
 		self.queue_max = QThread.idealThreadCount()
 
@@ -17,12 +18,18 @@ class ThumbnailMaker(QObject):
 		if self.running < self.queue_max:
 			self._createTask(path)
 		else:
-			self.queue.append(path)
+			self.queue[path] = None
 
 	def cancelTask(self, path):
 		try:
-			self.queue.remove(path)
-		except ValueError:  # maybe task is already processed
+			del self.queue[path]
+		except KeyError:  # maybe task is already processed
+			pass
+
+	def reprioritizeTask(self, path):
+		try:
+			self.queue.move_to_end(path, last=False)
+		except KeyError:  # maybe task is already processed
 			pass
 
 	def _createTask(self, path):
@@ -48,7 +55,7 @@ class ThumbnailMaker(QObject):
 
 		self.running -= 1
 		if self.queue:
-			p = self.queue.pop(0)
+			p, _ = self.queue.popitem(last=False)
 			self._createTask(p)
 
 

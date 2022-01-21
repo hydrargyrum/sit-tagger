@@ -57,6 +57,8 @@ class AbstractFilesModel(QAbstractListModel):
 		if role == Qt.DisplayRole:
 			return QVariant(path.name)
 		elif role == Qt.DecorationRole:
+			thumbnailmaker.maker.reprioritizeTask(str(path))
+
 			try:
 				tpath = self.thumbs[str(path)]
 			except KeyError:
