@@ -18,6 +18,12 @@ from . import thumbnailmaker
 
 
 class AbstractFilesModel(QAbstractListModel):
+	"""Abstract model returning files suitable for a visual files list
+
+	The abstract part is how the files path are obtained.
+	The concrete part returns file names with their thumbnails and allows drag-and-drop.
+	"""
+
 	emptypix = None
 
 	def __init__(self, parent=None):
@@ -102,6 +108,12 @@ class AbstractFilesModel(QAbstractListModel):
 
 
 def key_name_ints(name):
+	"""key function to sort names by treating digits sequences as numbers.
+
+	Lexical order: bar < foo1 < foo10 < foo2 < quux
+	key_name_ints: bar < foo1 < foo2 < foo10 < quux
+	"""
+
 	parts = []
 	for mtc in re.finditer("(\d+)|(\D+)", name):
 		if mtc[1]:
@@ -113,6 +125,8 @@ def key_name_ints(name):
 
 
 class ThumbDirModel(AbstractFilesModel):
+	"""Model that returns files from a directory"""
+
 	def __init__(self, parent=None):
 		super().__init__(parent)
 		self.path = None
@@ -192,6 +206,8 @@ class ThumbDirModel(AbstractFilesModel):
 
 
 class ThumbTagModel(AbstractFilesModel):
+	"""Model that returns files matching some tags"""
+
 	def __init__(self, db, parent=None):
 		super().__init__(parent)
 		self.db = db
@@ -207,6 +223,8 @@ class ThumbTagModel(AbstractFilesModel):
 
 
 class ImageList(QListView):
+	"""Widget displaying files and thumbnails"""
+
 	pasteRequested = Signal()
 
 	def __init__(self, *args, **kwargs):

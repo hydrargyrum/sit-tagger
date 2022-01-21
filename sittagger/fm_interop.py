@@ -1,4 +1,7 @@
 
+"""File managers inter-operability for copy/pasting files
+"""
+
 from urllib.parse import urlparse, unquote
 from pathlib import Path
 

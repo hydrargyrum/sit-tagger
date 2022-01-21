@@ -14,7 +14,7 @@ def xdg_config():
 def build_parser():
 	default_db = os.getenv('SITTAGGER_DATABASE') or xdg_config() + '/sit-tagger.sqlite'
 
-	parser = ArgumentParser()
+	parser = ArgumentParser(description="Manipulate a SIT-tagger database")
 	parser.add_argument('-d', '--database', metavar='FILE', dest='db', default=default_db)
 	return parser
 

@@ -128,6 +128,11 @@ class Cancelled(Exception):
 
 
 class FileOperation(QThread):
+	"""Long copy/cut files/trees operation
+
+	Emits progress information for current file, not the whole tree.
+	"""
+
 	processing = Signal(str, int, int)
 
 	def __init__(self, dest, sources, op, db):
@@ -140,10 +145,10 @@ class FileOperation(QThread):
 		assert op in ("cut", "copy")
 		assert self.dest.is_dir()
 
-	def copytree(self, src, dst):
+	def _copytree(self, src, dst):
 		shutil.copytree(src, dst, copy=self._copy)
 
-	def movetree(self, src, dstdir):
+	def _movetree(self, src, dstdir):
 		is_dir = src.is_dir()
 		xdev = _get_dev(src) != _get_dev(dstdir)
 
@@ -213,11 +218,11 @@ class FileOperation(QThread):
 			return
 
 		try:
-			getattr(self, "run_%s" % self.op)()
+			getattr(self, "_run_%s" % self.op)()
 		except Cancelled:
 			pass
 
-	def run_copy(self):
+	def _run_copy(self):
 		for src in self.sources:
 			if self.is_cancelled.is_set():
 				break
@@ -226,14 +231,14 @@ class FileOperation(QThread):
 				dest = self.dest.joinpath(src.name)
 				self._copy(src, dest)
 			elif src.is_dir():
-				self.copytree(src, self.dest)
+				self._copytree(src, self.dest)
 
-	def run_cut(self):
+	def _run_cut(self):
 		for src in self.sources:
 			if self.is_cancelled.is_set():
 				break
 
-			self.movetree(src, self.dest)
+			self._movetree(src, self.dest)
 
 	@Slot()
 	def cancel(self):
