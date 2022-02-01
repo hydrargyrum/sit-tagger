@@ -4,7 +4,7 @@ import re
 
 from PyQt5.QtCore import (
 	QSize, Qt, pyqtSlot as Slot, pyqtSignal as Signal, QAbstractListModel, QVariant,
-	QModelIndex, QMimeData,
+	QModelIndex, QMimeData, QFileSystemWatcher,
 )
 from PyQt5.QtGui import QPixmap, QKeySequence, QPixmapCache, QColor
 from PyQt5.QtWidgets import (
@@ -108,6 +108,17 @@ class AbstractFilesModel(QAbstractListModel):
 		for path in self.entries:
 			thumbnailmaker.maker.addTask(str(path))
 
+	def refreshEntry(self, file):
+		try:
+			row = self.entries.index(Path(file))
+		except ValueError:
+			return
+
+		qidx = self.index(row)
+		self.thumbs.pop(str(file), None)
+		self.dataChanged.emit(qidx, qidx)
+		thumbnailmaker.maker.addTask(str(file))
+
 	@Slot(str, str)
 	def doneThumbnail(self, origpath, thumbpath):
 		try:
@@ -144,6 +155,9 @@ class ThumbDirModel(AbstractFilesModel):
 	def __init__(self, parent=None):
 		super().__init__(parent)
 		self.path = None
+		self.watcher = QFileSystemWatcher(self)
+		self.watcher.directoryChanged.connect(self._directoryChanged)
+		self.watcher.fileChanged.connect(self._fileChanged)
 
 	def flags(self, qidx):
 		flags = super().flags(qidx)
@@ -151,8 +165,18 @@ class ThumbDirModel(AbstractFilesModel):
 			flags |= Qt.ItemIsDropEnabled
 		return flags
 
+	@Slot(str)
+	def _directoryChanged(self, path):
+		self.setPath(self.path)
+
+	@Slot(str)
+	def _fileChanged(self, path):
+		self.refreshEntry(path)
+
 	def setPath(self, path):
 		self.clearEntries()
+		self.watcher.removePaths(self.watcher.directories())
+		self.watcher.removePaths(self.watcher.files())
 
 		self.path = Path(path)
 
@@ -161,6 +185,8 @@ class ThumbDirModel(AbstractFilesModel):
 			key=lambda p: key_name_ints(p.name.lower())
 		)
 		self.setEntries(files)
+		self.watcher.addPath(str(self.path))
+		self.watcher.addPaths(str(p) for p in files)
 
 	def mimeTypes(self):
 		return [MIME_LIST]
