@@ -1,5 +1,5 @@
 
-from PyQt5.QtCore import Qt, QEvent, pyqtSignal as Signal, pyqtSlot as Slot
+from PyQt5.QtCore import Qt, QEvent, pyqtSignal as Signal, pyqtSlot as Slot, QTimer
 from PyQt5.QtGui import QKeySequence, QPalette, QPixmap, QMovie, QIcon, QImageReader
 from PyQt5.QtWidgets import QMainWindow, QScrollArea, QDockWidget, QToolBar, QLabel
 
@@ -268,6 +268,15 @@ class ImageViewerCenter(QScrollArea):
 		if self.movie:
 			return
 
+		# save relative scroll position to restore it later
+		vbar = self.verticalScrollBar()
+		hbar = self.horizontalScrollBar()
+		vpos = hpos = 0
+		if vbar.maximum():
+			vpos = vbar.value() / vbar.maximum()
+		if hbar.maximum():
+			hpos = hbar.value() / hbar.maximum()
+
 		if self.zoomMode == ZOOM_FACTOR:
 			if self.zoomFactor == 1:
 				self._setPixmap(self.originalPixmap)
@@ -281,6 +290,14 @@ class ImageViewerCenter(QScrollArea):
 			newpix = self._getScaledPixmap(self.viewport().size(), Qt.KeepAspectRatioByExpanding)
 			self._setPixmap(newpix)
 			self.zoomFactor = newpix.size().width() / float(self.originalPixmap.size().width())
+
+		def scroll_after_zoom():
+			vbar.setValue(vpos * vbar.maximum())
+			hbar.setValue(hpos * hbar.maximum())
+
+		# XXX the pixmap is not fully loaded and displayed yet, so the scrollbars maximum values
+		# are not up to date yet, so we have to wait before restoring the relative scroll position
+		QTimer.singleShot(0, scroll_after_zoom)
 
 	def _getScaledPixmap(self, size, mode=Qt.KeepAspectRatio):
 		return self.originalPixmap.scaled(size, mode, Qt.SmoothTransformation)
