@@ -49,8 +49,8 @@ class ImageViewer(QMainWindow):
 		self.toolbar.addAction(QIcon.fromTheme('zoom-original'), 'Z 1:1').triggered.connect(self.doNormalZoom)
 		self.toolbar.addAction(QIcon.fromTheme('zoom-fit-best'), 'Z Fit').triggered.connect(self.doFitAllZoom)
 		self.toolbar.addAction(QIcon.fromTheme('zoom-fit-best'), 'Z FitExp').triggered.connect(self.doFitCutZoom)
-		self.toolbar.addAction(QIcon.fromTheme('zoom-in'), 'Z x1.5').triggered.connect(self.zoom)
-		self.toolbar.addAction(QIcon.fromTheme('zoom-out'), 'Z /1.5').triggered.connect(self.unzoom)
+		self.toolbar.addAction(QIcon.fromTheme('zoom-in'), 'Z In').triggered.connect(self.zoom)
+		self.toolbar.addAction(QIcon.fromTheme('zoom-out'), 'Z Out').triggered.connect(self.unzoom)
 
 		self.fullscreenAction = self.toolbar.addAction(QIcon.fromTheme('view-fullscreen'), 'Fullscreen')
 		self.fullscreenAction.setCheckable(True)
@@ -103,11 +103,11 @@ class ImageViewer(QMainWindow):
 
 	@Slot()
 	def zoom(self):
-		self.scrollview.multiplyZoomFactor(1.5)
+		self.scrollview.multiplyZoomFactor(1.1)
 
 	@Slot()
 	def unzoom(self):
-		self.scrollview.multiplyZoomFactor(1 / 1.5)
+		self.scrollview.multiplyZoomFactor(1 / 1.1)
 
 	def spawn(self, files, currentFile):
 		self.files = files
