@@ -46,11 +46,15 @@ class ImageViewer(QMainWindow):
 		act.triggered.connect(self.showNextFile)
 		self.toolbar.addSeparator()
 
-		self.toolbar.addAction(QIcon.fromTheme('zoom-original'), 'Z 1:1').triggered.connect(self.doNormalZoom)
-		self.toolbar.addAction(QIcon.fromTheme('zoom-fit-best'), 'Z Fit').triggered.connect(self.doFitAllZoom)
-		self.toolbar.addAction(QIcon.fromTheme('zoom-fit-best'), 'Z FitExp').triggered.connect(self.doFitCutZoom)
-		self.toolbar.addAction(QIcon.fromTheme('zoom-in'), 'Z In').triggered.connect(self.zoom)
-		self.toolbar.addAction(QIcon.fromTheme('zoom-out'), 'Z Out').triggered.connect(self.unzoom)
+		self.scrollview = ImageViewerCenter()
+		self.scrollview.installEventFilter(self) ### !
+		self.setCentralWidget(self.scrollview)
+
+		self.toolbar.addAction(QIcon.fromTheme('zoom-original'), 'Z 1:1').triggered.connect(self.scrollview.doNormalZoom)
+		self.toolbar.addAction(QIcon.fromTheme('zoom-fit-best'), 'Z Fit').triggered.connect(self.scrollview.doFitAllZoom)
+		self.toolbar.addAction(QIcon.fromTheme('zoom-fit-best'), 'Z FitExp').triggered.connect(self.scrollview.doFitCutZoom)
+		self.toolbar.addAction(QIcon.fromTheme('zoom-in'), 'Z In').triggered.connect(self.scrollview.zoom)
+		self.toolbar.addAction(QIcon.fromTheme('zoom-out'), 'Z Out').triggered.connect(self.scrollview.unzoom)
 
 		self.fullscreenAction = self.toolbar.addAction(QIcon.fromTheme('view-fullscreen'), 'Fullscreen')
 		self.fullscreenAction.setCheckable(True)
@@ -66,10 +70,6 @@ class ImageViewer(QMainWindow):
 		self.docktagger.setWidget(self.tageditor)
 		self.addDockWidget(Qt.LeftDockWidgetArea, self.docktagger)
 		self.docktagger.hide()
-
-		self.scrollview = ImageViewerCenter()
-		self.scrollview.installEventFilter(self) ### !
-		self.setCentralWidget(self.scrollview)
 
 		self.scrollview.topZoneEntered.connect(self.toolbar.show)
 		self.scrollview.topZoneLeft.connect(self.toolbar.hide)
@@ -88,26 +88,6 @@ class ImageViewer(QMainWindow):
 				self.showNextFile()
 				return True
 		return super(ImageViewer, self).eventFilter(sview, ev)
-
-	@Slot()
-	def doNormalZoom(self):
-		self.scrollview.setZoomFactor(1.)
-
-	@Slot()
-	def doFitAllZoom(self):
-		self.scrollview.setZoomMode(ZOOM_FITALL)
-
-	@Slot()
-	def doFitCutZoom(self):
-		self.scrollview.setZoomMode(ZOOM_FITCUT)
-
-	@Slot()
-	def zoom(self):
-		self.scrollview.multiplyZoomFactor(1.1)
-
-	@Slot()
-	def unzoom(self):
-		self.scrollview.multiplyZoomFactor(1 / 1.1)
 
 	def spawn(self, files, currentFile):
 		self.files = files
@@ -234,7 +214,40 @@ class ImageViewerCenter(QScrollArea):
 		else:
 			QScrollArea.keyReleaseEvent(self, ev)
 
+	def wheelEvent(self, event):
+		if not (event.modifiers() & Qt.ControlModifier):
+			return super().wheelEvent(event)
+
+		delta = event.angleDelta()
+		print(delta)
+		if delta.isNull() or not delta.y():
+			return
+		if delta.y() > 0:
+			self.zoom()
+		else:
+			self.unzoom()
+
 	### public
+	@Slot()
+	def doNormalZoom(self):
+		self.setZoomFactor(1.)
+
+	@Slot()
+	def doFitAllZoom(self):
+		self.setZoomMode(ZOOM_FITALL)
+
+	@Slot()
+	def doFitCutZoom(self):
+		self.setZoomMode(ZOOM_FITCUT)
+
+	@Slot()
+	def zoom(self):
+		self.multiplyZoomFactor(1.1)
+
+	@Slot()
+	def unzoom(self):
+		self.multiplyZoomFactor(1 / 1.1)
+
 	def setZoomMode(self, mode):
 		self.zoomMode = mode
 		self._rebuildZoom()
