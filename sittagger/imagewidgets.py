@@ -309,6 +309,13 @@ class ImageList(QListView):
 		super().showEvent(ev)
 		self.verticalScrollBar().setSingleStep(32)
 
+	acceptedMouseButtons = {Qt.LeftButton, Qt.RightButton, Qt.MiddleButton}
+
+	def mousePressEvent(self, ev):
+		if ev.button() in self.acceptedMouseButtons:
+			super().mousePressEvent(ev)
+		ev.ignore()
+
 	def browseDir(self, path):
 		model = ThumbDirModel()
 		model.fileOperation.connect(self.modelFileOperation)
