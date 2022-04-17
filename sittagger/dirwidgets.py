@@ -86,7 +86,7 @@ class DirTreeView(QTreeView):
 		super(DirTreeView, self).__init__(*args, **kwargs)
 
 		mdl = FSModelWithDND(parent=self)
-		mdl.setFilter(QDir.AllDirs | QDir.Drives | QDir.Hidden | QDir.NoDotAndDotDot)
+		mdl.setFilter(QDir.AllDirs | QDir.Drives | QDir.NoDotAndDotDot)
 		self.setModel(mdl)
 		mdl.fileOperation.connect(self.modelFileOperation)
 
@@ -103,6 +103,11 @@ class DirTreeView(QTreeView):
 		act = QAction(self.tr("&Create folder..."), self)
 		act.triggered.connect(self._createFolder)
 		self.addAction(act)
+
+		action = QAction(self.tr("Show &hidden folders"), self)
+		action.setCheckable(True)
+		action.toggled.connect(self.toggleHidden)
+		self.addAction(action)
 
 		self.setContextMenuPolicy(Qt.ActionsContextMenu)
 
@@ -195,3 +200,11 @@ class DirTreeView(QTreeView):
 			return
 
 		current.joinpath(new).mkdir()
+
+	@Slot(bool)
+	def toggleHidden(self, show):
+		model = self.model()
+		if show:
+			model.setFilter(model.filter() | QDir.Hidden)
+		else:
+			model.setFilter(model.filter() & ~QDir.Hidden)
