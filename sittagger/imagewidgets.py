@@ -270,35 +270,37 @@ class ImageList(QListView):
 	def __init__(self, *args, **kwargs):
 		super(ImageList, self).__init__(*args, **kwargs)
 
-		action = QAction(parent=self)
+		action = QAction(self.tr("Re&name"), self)
 		action.setShortcut(QKeySequence("F2"))
 		action.setShortcutContext(Qt.WidgetShortcut)
 		action.triggered.connect(self.popRenameSelected)
 		self.addAction(action)
 
-		action = QAction(parent=self)
+		action = QAction(self.tr("&Copy files"), self)
 		action.setShortcut(QKeySequence(QKeySequence.Copy))
 		action.setShortcutContext(Qt.WidgetShortcut)
 		action.triggered.connect(self.markForCopy)
 		self.addAction(action)
 
-		action = QAction(parent=self)
+		action = QAction(self.tr("Cut files"), self)
 		action.setShortcut(QKeySequence(QKeySequence.Cut))
 		action.setShortcutContext(Qt.WidgetShortcut)
 		action.triggered.connect(self.markForCut)
 		self.addAction(action)
 
-		action = QAction(parent=self)
+		action = QAction(self.tr("&Paste files"), self)
 		action.setShortcut(QKeySequence(QKeySequence.Paste))
 		action.setShortcutContext(Qt.WidgetShortcut)
 		action.triggered.connect(self.pasteRequested)
 		self.addAction(action)
 
-		action = QAction(parent=self)
+		action = QAction(self.tr("Trash selected"), self)
 		action.setShortcut(QKeySequence(QKeySequence.Delete))
 		action.setShortcutContext(Qt.WidgetShortcut)
 		action.triggered.connect(self.trashSelected)
 		self.addAction(action)
+
+		self.setContextMenuPolicy(Qt.ActionsContextMenu)
 
 	def selectionChanged(self, new, old):
 		self.itemSelectionChanged.emit()
