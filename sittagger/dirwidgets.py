@@ -83,7 +83,7 @@ class FSModelWithDND(QFileSystemModel):
 
 class DirTreeView(QTreeView):
 	def __init__(self, *args, **kwargs):
-		super(DirTreeView, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 
 		mdl = FSModelWithDND(parent=self)
 		mdl.setFilter(QDir.AllDirs | QDir.Drives | QDir.NoDotAndDotDot)

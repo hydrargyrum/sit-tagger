@@ -25,7 +25,7 @@ class TagEditor(QListView):
 	changedTags = Signal()
 
 	def __init__(self, *args, **kwargs):
-		super(TagEditor, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 
 		self.db = None
 		self.paths = []
@@ -85,7 +85,7 @@ class TagEditor(QListView):
 		self.data.clear()
 		self.paths = paths
 
-		tags_per_file = dict((path, self.db.find_tags_by_file(path)) for path in paths)
+		tags_per_file = {path: self.db.find_tags_by_file(path) for path in paths}
 		for tag in sorted(self.db.list_tags()):
 			item = self._createItem(tag)
 			item.setCheckState(self._state(tag, tags_per_file))
@@ -135,10 +135,10 @@ class TagChooser(QListView):
 	changed = Signal()
 
 	def __init__(self, *args, **kwargs):
-		super(TagChooser,self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 		self.db = None
 
-		self.filter = u''
+		self.filter = ''
 
 		self.data = QStandardItemModel(self)
 		self.proxy = QSortFilterProxyModel(self)
@@ -195,7 +195,7 @@ class TagChooser(QListView):
 
 class TagChooserDialog(QDialog):
 	def __init__(self, db, *args, **kwargs):
-		super(TagChooserDialog, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 		self.db = db
 
 		self.chooser = TagChooser(db, parent=self)

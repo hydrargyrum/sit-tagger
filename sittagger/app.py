@@ -36,7 +36,7 @@ Ui_MainWindow = load_ui_class('sittagger', 'mainwindow', 'Ui_MainWindow')
 
 class Win(Ui_MainWindow, QMainWindow):
 	def __init__(self, options):
-		super(Win, self).__init__()
+		super().__init__()
 		super().setupUi(self)
 
 		self.setWindowIcon(QIcon(QPixmap(

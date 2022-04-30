@@ -15,9 +15,9 @@ def vectorLength(qp):
 	return math.sqrt(qp.x() * qp.x() + qp.y() * qp.y())
 
 
-class ItemMixin(object):
+class ItemMixin:
 	def __init__(self):
-		super(ItemMixin, self).__init__()
+		super().__init__()
 
 		self.setFlag(self.ItemIsSelectable, True)
 		self.setFlag(self.ItemIsMovable, True)
@@ -68,7 +68,7 @@ class ItemMixin(object):
 
 class Image(ItemMixin, QGraphicsPixmapItem):
 	def __init__(self, path):
-		super(Image, self).__init__()
+		super().__init__()
 
 		pix = QPixmap(path)
 		QPixmapCache.insert(path, pix)
@@ -80,11 +80,11 @@ class Image(ItemMixin, QGraphicsPixmapItem):
 
 class Scene(QGraphicsScene):
 	def __init__(self, *args):
-		super(Scene, self).__init__(*args)
+		super().__init__(*args)
 		self.mode = MODE_MOVE
 
 	def addItem(self, item):
-		super(Scene, self).addItem(item)
+		super().addItem(item)
 		if isinstance(item, ItemMixin):
 			item.setMode(self.mode)
 
@@ -108,7 +108,7 @@ class Scene(QGraphicsScene):
 
 class Canvas(QGraphicsView):
 	def __init__(self, *args):
-		super(Canvas, self).__init__(*args)
+		super().__init__(*args)
 		self.setScene(Scene(self))
 
 	def addItem(self, item):
@@ -121,4 +121,4 @@ class Canvas(QGraphicsView):
 			self.scene().setZoomMode()
 		elif ev.key() == Qt.Key_F3:
 			self.scene().setRotMode()
-		return super(Canvas, self).keyPressEvent(ev)
+		return super().keyPressEvent(ev)

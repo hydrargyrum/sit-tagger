@@ -10,7 +10,7 @@ from .videowidgets import BasicVideoWidget, VideoControl
 
 class GridManager(QSplitter):
 	def __init__(self, *args, **kwargs):
-		super(GridManager, self).__init__(Qt.Horizontal, *args, **kwargs)
+		super().__init__(Qt.Horizontal, *args, **kwargs)
 		self.addColumn()
 
 	def addColumn(self):
@@ -47,7 +47,7 @@ class GridManager(QSplitter):
 
 class Video(BasicVideoWidget):
 	def __init__(self, *args, **kwargs):
-		super(Video, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 		self.setMuted(True)
 		self.setMouseTracking(True)
 		self.controls = None
@@ -56,7 +56,7 @@ class Video(BasicVideoWidget):
 		self.playPause()
 
 	def resizeEvent(self, ev):
-		super(Video, self).resizeEvent(ev)
+		super().resizeEvent(ev)
 		if self.controls:
 			r = self.rect()
 			r.setTop(r.bottom() - 40)
@@ -83,7 +83,7 @@ class Video(BasicVideoWidget):
 
 class Win(QMainWindow):
 	def __init__(self, *args, **kwargs):
-		super(Win, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 		self.setCentralWidget(GridManager())
 
 		m = self.menuBar().addMenu('&Open')

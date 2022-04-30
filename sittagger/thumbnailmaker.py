@@ -9,7 +9,7 @@ class ThumbnailMaker(QObject):
 	done = Signal(str, str)
 
 	def __init__(self, *args, **kwargs):
-		super(ThumbnailMaker, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 		self.queue = OrderedDict()
 		self.running = 0
 		self.queue_max = QThread.idealThreadCount()

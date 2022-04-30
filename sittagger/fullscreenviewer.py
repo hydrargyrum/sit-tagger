@@ -24,7 +24,7 @@ class AutoHideDock(QDockWidget, AutoHideMixin):
 
 class ImageViewer(QMainWindow):
 	def __init__(self, db, *args, **kwargs):
-		super(ImageViewer, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 
 		self.db = db
 		self.currentIndex = -1
@@ -87,7 +87,7 @@ class ImageViewer(QMainWindow):
 			elif ev.key() in [Qt.Key_PageDown, Qt.Key_Space]:
 				self.showNextFile()
 				return True
-		return super(ImageViewer, self).eventFilter(sview, ev)
+		return super().eventFilter(sview, ev)
 
 	def spawn(self, files, currentFile):
 		self.files = files
@@ -144,7 +144,7 @@ class ImageViewerCenter(QScrollArea):
 	topMargin = 30
 
 	def __init__(self, *args, **kwargs):
-		super(ImageViewerCenter, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 		self.zoomMode = ZOOM_FACTOR
 		self.zoomFactor = 1
 		self.moving = None
@@ -198,7 +198,7 @@ class ImageViewerCenter(QScrollArea):
 			self.topZone = newTop
 
 	def resizeEvent(self, ev):
-		super(ImageViewerCenter, self).resizeEvent(ev)
+		super().resizeEvent(ev)
 		if self.zoomMode != ZOOM_FACTOR:
 			self._rebuildZoom()
 

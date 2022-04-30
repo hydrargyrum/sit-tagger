@@ -19,7 +19,7 @@ def from_path(path):
 	return path
 
 
-class Db(object):
+class Db:
 	def __init__(self, multithread=False):
 		self.db = None
 		self.db_path = None

@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import os.path
 
 from PyQt5.QtCore import pyqtSignal as Signal, pyqtSlot as Slot, QUrl, Qt
@@ -14,7 +12,7 @@ from .tagwidgets import TagChooserDialog
 
 class SeekSlider(QSlider):
 	def __init__(self, mp):
-		super(SeekSlider, self).__init__(Qt.Horizontal)
+		super().__init__(Qt.Horizontal)
 		self.mediaPlayer = mp
 		self.mediaPlayer.durationChanged.connect(self._setMax)
 		self.mediaPlayer.seekableChanged.connect(self.setEnabled)
@@ -40,7 +38,7 @@ class SeekSlider(QSlider):
 
 class PositionLabel(QLabel):
 	def __init__(self, mp, format='{fsec:03.0f} ({min:02.0f}:{sec:02.0f})'):
-		super(PositionLabel, self).__init__()
+		super().__init__()
 		self.format = format
 		self.max = 0
 		self.mediaPlayer = mp
@@ -68,7 +66,7 @@ class PositionLabel(QLabel):
 
 class BasicVideoWidget(QVideoWidget):
 	def __init__(self, *args, **kwargs):
-		super(BasicVideoWidget, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 		self.mediaPlayer = QMediaPlayer(parent=self)
 		self.setMediaObject(self.mediaPlayer)
 
@@ -150,7 +148,7 @@ class BasicVideoWidget(QVideoWidget):
 
 class VideoControl(QWidget):
 	def __init__(self, video, *args, **kwargs):
-		super(VideoControl, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 		self.video = video
 		self.setLayout(QHBoxLayout())
 
@@ -176,13 +174,13 @@ class VideoControl(QWidget):
 			self.playPauseButton.setText('▶')
 
 	def showEvent(self, ev):
-		super(VideoControl, self).showEvent(ev)
+		super().showEvent(ev)
 		self.update()
 
 
 class VideoTagEditor(QWidget):
 	def __init__(self, db):
-		super(VideoTagEditor, self).__init__()
+		super().__init__()
 
 		self.path = None
 		self.db = db

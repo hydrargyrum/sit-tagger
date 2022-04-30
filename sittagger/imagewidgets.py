@@ -140,7 +140,7 @@ def key_name_ints(name):
 	"""
 
 	parts = []
-	for mtc in re.finditer("(\d+)|(\D+)", name):
+	for mtc in re.finditer(r"(\d+)|(\D+)", name):
 		if mtc[1]:
 			parts.append((0, int(mtc[1])))
 		else:
@@ -268,7 +268,7 @@ class ImageList(QListView):
 	pasteRequested = Signal()
 
 	def __init__(self, *args, **kwargs):
-		super(ImageList, self).__init__(*args, **kwargs)
+		super().__init__(*args, **kwargs)
 
 		action = QAction(self.tr("Re&name"), self)
 		action.setShortcut(QKeySequence("F2"))
