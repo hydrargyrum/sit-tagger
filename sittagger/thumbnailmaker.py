@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: WTFPL
 
 from collections import OrderedDict
 import sys

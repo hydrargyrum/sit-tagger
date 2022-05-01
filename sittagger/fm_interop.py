@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: WTFPL
 
 """File managers inter-operability for copy/pasting files
 """

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: WTFPL
 
 from pathlib import Path
 import re

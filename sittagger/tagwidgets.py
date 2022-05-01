@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: WTFPL
 
 from PyQt5.QtCore import Qt, pyqtSignal as Signal, pyqtSlot as Slot, QSortFilterProxyModel
 from PyQt5.QtGui import QStandardItem, QStandardItemModel

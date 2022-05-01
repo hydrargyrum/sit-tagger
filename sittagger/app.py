@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # base: 2010-02
-# license: WTFPLv2
+# SPDX-License-Identifier: WTFPL
 
 from importlib import import_module
 from pathlib import Path

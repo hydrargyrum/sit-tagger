@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: WTFPL
 
 from argparse import ArgumentParser
 import os

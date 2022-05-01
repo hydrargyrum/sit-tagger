@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: WTFPL
 
 from PyQt5.QtCore import Qt, QEvent, pyqtSignal as Signal, pyqtSlot as Slot, QTimer
 from PyQt5.QtGui import QKeySequence, QPalette, QPixmap, QMovie, QIcon, QImageReader

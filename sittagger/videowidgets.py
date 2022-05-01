@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: WTFPL
+
 import os.path
 
 from PyQt5.QtCore import pyqtSignal as Signal, pyqtSlot as Slot, QUrl, Qt

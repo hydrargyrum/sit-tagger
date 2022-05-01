@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: WTFPL
 
 from logging import getLogger
 from pathlib import Path
