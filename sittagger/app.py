@@ -3,12 +3,13 @@
 # SPDX-License-Identifier: WTFPL
 
 from importlib import import_module
+import mimetypes
 from pathlib import Path
 import sys
 import os
 
-from PyQt5.QtCore import pyqtSlot as Slot
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtCore import pyqtSlot as Slot, QUrl
+from PyQt5.QtGui import QIcon, QPixmap, QDesktopServices
 from PyQt5.QtWidgets import (
 	QMainWindow, QListWidgetItem, QApplication, QAbstractItemView,
 )
@@ -66,7 +67,7 @@ class Win(Ui_MainWindow, QMainWindow):
 
 	def _init_imagelist(self):
 		self.imageList.itemSelectionChanged.connect(self._editTagsItems)
-		self.imageList.activated.connect(self._spawnViewerItem)
+		self.imageList.activated.connect(self._openFile)
 		self.imageList.setSelectionMode(QAbstractItemView.ExtendedSelection)
 		self.imageList.pasteRequested.connect(self._onListPaste)
 
@@ -100,6 +101,14 @@ class Win(Ui_MainWindow, QMainWindow):
 		self.editTagsItems(self.imageList.selectedFiles())
 
 	@Slot()
+	def _openFile(self):
+		file = self.imageList.getCurrentFile()
+		mime = mimetypes.guess_type(file)[0]
+		if mime and mime.startswith("image/"):
+			self._spawnViewerItem()
+		else:
+			QDesktopServices.openUrl(QUrl(Path(file).as_uri()))
+
 	def _spawnViewerItem(self):
 		files = self.imageList.getFiles()
 		self.spawnViewer(self.imageList.getFiles(), self.imageList.getCurrentFile())
