@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: WTFPL
 
+import difflib
 from pathlib import Path
 import re
 
@@ -99,6 +100,7 @@ class AbstractFilesModel(QAbstractListModel):
 		self.endRemoveRows()
 
 	def setEntries(self, files):
+		# replace all entries, assumes they have been cleared before
 		assert not self.entries, "there must be 0 entries before calling setEntries"
 
 		self.beginInsertRows(QModelIndex(), 0, len(files) - 1)
@@ -108,6 +110,31 @@ class AbstractFilesModel(QAbstractListModel):
 
 		for path in self.entries:
 			thumbnailmaker.maker.addTask(str(path))
+
+	def setEntriesDiff(self, files):
+		# set entries to use, trying to preserve those who existed before and are still here
+		old_files = self.entries.copy()
+
+		matcher = difflib.SequenceMatcher(a=old_files, b=files)
+		for op, i1, i2, j1, j2 in reversed(matcher.get_opcodes()):
+			assert op in ("equal", "replace", "insert", "delete")
+
+			if op in ("delete", "replace"):
+				for path in self.entries[i1:i2]:
+					thumbnailmaker.maker.cancelTask(str(path))
+
+				self.beginRemoveRows(QModelIndex(), i1, i2 - 1)
+				del self.entries[i1:i2]
+				self.endRemoveRows()
+
+			if op in ("insert", "replace"):
+				to_insert = files[j1:j2]
+				self.beginInsertRows(QModelIndex(), i1, i1 + len(to_insert) - 1)
+				self.entries[i1:i1] = to_insert
+				self.endInsertRows()
+
+				for path in to_insert:
+					thumbnailmaker.maker.addTask(str(path))
 
 	def refreshEntry(self, file):
 		try:
@@ -168,7 +195,7 @@ class ThumbDirModel(AbstractFilesModel):
 
 	@Slot(str)
 	def _directoryChanged(self, path):
-		self.setPath(self.path)
+		self.refreshDir()
 
 	@Slot(str)
 	def _fileChanged(self, path):
@@ -186,6 +213,19 @@ class ThumbDirModel(AbstractFilesModel):
 			key=lambda p: key_name_ints(p.name.lower())
 		)
 		self.setEntries(files)
+		self.watcher.addPath(str(self.path))
+		self.watcher.addPaths(str(p) for p in files)
+
+	def refreshDir(self):
+		# TODO: avoid code duplication with setPath
+		self.watcher.removePaths(self.watcher.directories())
+		self.watcher.removePaths(self.watcher.files())
+
+		files = sorted(
+			filter(lambda p: p.is_file(), self.path.iterdir()),
+			key=lambda p: key_name_ints(p.name.lower())
+		)
+		self.setEntriesDiff(files)
 		self.watcher.addPath(str(self.path))
 		self.watcher.addPaths(str(p) for p in files)
 
