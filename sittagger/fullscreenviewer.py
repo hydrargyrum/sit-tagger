@@ -306,8 +306,8 @@ class ImageViewerCenter(QScrollArea):
 			self.zoomFactor = newpix.size().width() / float(self.originalPixmap.size().width())
 
 		def scroll_after_zoom():
-			vbar.setValue(vpos * vbar.maximum())
-			hbar.setValue(hpos * hbar.maximum())
+			vbar.setValue(int(vpos * vbar.maximum()))
+			hbar.setValue(int(hpos * hbar.maximum()))
 
 		# XXX the pixmap is not fully loaded and displayed yet, so the scrollbars maximum values
 		# are not up to date yet, so we have to wait before restoring the relative scroll position
