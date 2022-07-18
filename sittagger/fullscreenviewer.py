@@ -1,7 +1,11 @@
 # SPDX-License-Identifier: WTFPL
 
-from PyQt5.QtCore import Qt, QEvent, pyqtSignal as Signal, pyqtSlot as Slot, QTimer
-from PyQt5.QtGui import QKeySequence, QPalette, QPixmap, QMovie, QIcon, QImageReader
+from PyQt5.QtCore import (
+	Qt, QEvent, pyqtSignal as Signal, pyqtSlot as Slot, QTimer, QPointF,
+)
+from PyQt5.QtGui import (
+	QKeySequence, QPalette, QPixmap, QMovie, QIcon, QImageReader, QCursor,
+)
 from PyQt5.QtWidgets import QMainWindow, QScrollArea, QDockWidget, QToolBar, QLabel
 
 from .tagwidgets import TagEditor
@@ -148,6 +152,7 @@ class ImageViewerCenter(QScrollArea):
 		super().__init__(*args, **kwargs)
 		self.zoomMode = ZOOM_FACTOR
 		self.zoomFactor = 1
+		self.oldZoomFactor = self.zoomFactor
 		self.moving = None
 
 		imgWidget = QLabel()
@@ -220,13 +225,12 @@ class ImageViewerCenter(QScrollArea):
 			return super().wheelEvent(event)
 
 		delta = event.angleDelta()
-		print(delta)
 		if delta.isNull() or not delta.y():
 			return
 		if delta.y() > 0:
-			self.zoom()
+			self.zoom(at_cursor=True)
 		else:
-			self.unzoom()
+			self.unzoom(at_cursor=True)
 
 	### public
 	@Slot()
@@ -242,23 +246,24 @@ class ImageViewerCenter(QScrollArea):
 		self.setZoomMode(ZOOM_FITCUT)
 
 	@Slot()
-	def zoom(self):
-		self.multiplyZoomFactor(1.1)
+	def zoom(self, at_cursor=False):
+		self.multiplyZoomFactor(1.1, at_cursor)
 
 	@Slot()
-	def unzoom(self):
-		self.multiplyZoomFactor(1 / 1.1)
+	def unzoom(self, at_cursor=False):
+		self.multiplyZoomFactor(1 / 1.1, at_cursor)
 
-	def setZoomMode(self, mode):
+	def setZoomMode(self, mode, at_cursor=False):
 		self.zoomMode = mode
-		self._rebuildZoom()
+		self._rebuildZoom(at_cursor)
 
-	def setZoomFactor(self, factor):
+	def setZoomFactor(self, factor, at_cursor):
+		self.oldZoomFactor = self.zoomFactor
 		self.zoomFactor = factor
-		self.setZoomMode(ZOOM_FACTOR)
+		self.setZoomMode(ZOOM_FACTOR, at_cursor)
 
-	def multiplyZoomFactor(self, factor):
-		self.setZoomFactor(self.zoomFactor * factor)
+	def multiplyZoomFactor(self, factor, at_cursor):
+		self.setZoomFactor(self.zoomFactor * factor, at_cursor)
 
 	def setFile(self, file):
 		self.file = file
@@ -278,7 +283,7 @@ class ImageViewerCenter(QScrollArea):
 			self._rebuildZoom()
 
 	###
-	def _rebuildZoom(self):
+	def _rebuildZoom(self, at_cursor=False):
 		if self.movie:
 			return
 
@@ -291,6 +296,16 @@ class ImageViewerCenter(QScrollArea):
 		if hbar.maximum():
 			hpos = hbar.value() / hbar.maximum()
 
+		oldScale = self.oldZoomFactor
+		scrollbarPos = QPointF(hbar.value(), vbar.value())
+
+		if at_cursor:
+			# zoom at cursor algorithm from https://stackoverflow.com/a/32269574/6541288
+			gcur = QPointF(QCursor.pos())
+			deltaToPos = self.mapFromGlobal(gcur.toPoint()) / oldScale - self.widget().pos() / oldScale
+		else:
+			deltaToPos = QPointF(self.viewport().rect().center()) / oldScale - QPointF(self.widget().pos()) / oldScale
+
 		if self.zoomMode == ZOOM_FACTOR:
 			if self.zoomFactor == 1:
 				self._setPixmap(self.originalPixmap)
@@ -299,15 +314,20 @@ class ImageViewerCenter(QScrollArea):
 		elif self.zoomMode == ZOOM_FITALL:
 			newpix = self._getScaledPixmap(self.viewport().size())
 			self._setPixmap(newpix)
+			self.oldZoomFactor = self.zoomFactor
 			self.zoomFactor = newpix.size().width() / float(self.originalPixmap.size().width())
 		elif self.zoomMode == ZOOM_FITCUT:
 			newpix = self._getScaledPixmap(self.viewport().size(), Qt.KeepAspectRatioByExpanding)
 			self._setPixmap(newpix)
+			self.oldZoomFactor = self.zoomFactor
 			self.zoomFactor = newpix.size().width() / float(self.originalPixmap.size().width())
 
 		def scroll_after_zoom():
-			vbar.setValue(int(vpos * vbar.maximum()))
-			hbar.setValue(int(hpos * hbar.maximum()))
+			hbar.setValue(int(scrollbarPos.x() + delta.x()))
+			vbar.setValue(int(scrollbarPos.y() + delta.y()))
+
+		newScale = self.zoomFactor
+		delta = deltaToPos * newScale - deltaToPos * oldScale
 
 		# XXX the pixmap is not fully loaded and displayed yet, so the scrollbars maximum values
 		# are not up to date yet, so we have to wait before restoring the relative scroll position
