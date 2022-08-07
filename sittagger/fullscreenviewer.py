@@ -235,7 +235,7 @@ class ImageViewerCenter(QScrollArea):
 	### public
 	@Slot()
 	def doNormalZoom(self):
-		self.setZoomFactor(1.)
+		self.setZoomFactor(1., at_cursor=False)
 
 	@Slot()
 	def doFitAllZoom(self):
