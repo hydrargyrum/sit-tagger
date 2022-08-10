@@ -59,18 +59,32 @@ class Scanner(QThread):
 			self.scan(sub)
 
 
-class LazyImageView(QPushButton):
+class FileButton(QPushButton):
+	def __init__(self, path, label=None, **kwargs):
+		super().__init__(**kwargs)
+
+		self.path = path
+		if label:
+			self.setText(str(label))
+
+		self.clicked.connect(self.open_file)
+
+	@Slot()
+	def open_file(self):
+		QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.path)))
+
+
+class LazyImageView(FileButton):
 	def __init__(self, path):
-		super().__init__()
-		self.path = str(path)
+		super().__init__(path)
 		self.thumb = str(THUMBS[path])
 
 	def buildPix(self):
-		pix = QPixmapCache.find(self.path)
+		pix = QPixmapCache.find(self.thumb)
 		if not pix:
 			print(f"rebuilding pix of {self.path}")
 			pix = QPixmap()
-			pix.load(self.path)
+			pix.load(self.thumb)
 			if pix.isNull():
 				# TODO does NULLPIX count in cache more than once?
 				pix = NULLPIX
@@ -81,7 +95,7 @@ class LazyImageView(QPushButton):
 					Qt.SmoothTransformation,
 				)
 
-			QPixmapCache.insert(self.path, pix)
+			QPixmapCache.insert(self.thumb, pix)
 		return pix
 
 	def paintEvent(self, ev):
@@ -92,12 +106,15 @@ class LazyImageView(QPushButton):
 			pnt.drawPixmap(0, 0, pix)
 		else:
 			pnt = QStylePainter(self)
-			option = QStyleOptionFocusRect()
+
+			option = QStyleOptionButton()
 			option.initFrom(self)
 			option.backgroundColor = self.palette().color(QPalette.Background)
+			option.iconSize = pix.size()
+			#pnt.drawPrimitive(int(QStyle.CE_PushButton), option)
+			#pnt.drawControl(QStyle.CE_PushButton, option)
 
 			pnt.drawItemPixmap(option.rect, Qt.AlignCenter, pix)
-			pnt.drawPrimitive(int(QStyle.CE_PushButton), option)
 
 	def sizeHint(self):
 		return NULLPIX.size()
@@ -118,8 +135,9 @@ class DirView(QWidget):
 		self.files.append(sub)
 		self.layout().addWidget(LazyImageView(sub), row * 2, col, Qt.AlignCenter)
 
-		label = QLabel(sub.name)
-		label.setWordWrap(True)
+		label = FileButton(sub, label=sub.name)
+		label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Minimum)
+		#label.setWordWrap(True)
 		self.layout().addWidget(label, row * 2 + 1, col)
 
 
@@ -131,8 +149,7 @@ class BirdEye(QWidget):
 
 	@Slot(Path)
 	def add_dir(self, path):
-		title = QPushButton(str(path))
-		title.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(f"file://{path}")))
+		title = FileButton(path, label=path)
 		self.layout().addWidget(title)
 		self.dirs[path] = DirView(path)
 		self.layout().addWidget(self.dirs[path])
@@ -148,7 +165,7 @@ class BirdEye(QWidget):
 
 QPixmapCache.setCacheLimit(100 << 10)
 
-app = QApplication([])
+app = QApplication(sys.argv)
 #NULLPIX = QPixmap(QSize(256, 256))
 NULLPIX = QPixmap(QSize(128, 128))
 NULLPIX.fill(Qt.black)
@@ -160,7 +177,11 @@ scroller.setWidgetResizable(True)
 scroller.setWidget(beye)
 scroller.show()
 
-root = Path(sys.argv[1]).resolve()
+try:
+	root = Path(app.arguments()[1]).resolve()
+except IndexError:
+	root = Path.cwd()
+
 scanner = Scanner(root)
 scanner.newdir.connect(beye.add_dir)
 scanner.newfile.connect(beye.add_file)
