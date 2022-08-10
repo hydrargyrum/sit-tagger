@@ -194,28 +194,30 @@ class BirdEye(QWidget):
 		return QSize(100, sum(self.layout().itemAt(i).sizeHint().height() for i in range(self.layout().count())))
 
 
-QPixmapCache.setCacheLimit(100 << 10)
+if __name__ == "__main__":
+	QPixmapCache.setCacheLimit(100 << 10)
 
-app = QApplication(sys.argv)
-#NULLPIX = QPixmap(QSize(256, 256))
-NULLPIX = QPixmap(QSize(128, 128))
-NULLPIX.fill(Qt.black)
+	app = QApplication(sys.argv)
+	#NULLPIX = QPixmap(QSize(256, 256))
+	NULLPIX = QPixmap(QSize(128, 128))
+	NULLPIX.fill(Qt.black)
 
-beye = BirdEye()
-scroller = QScrollArea()
-scroller.setWidgetResizable(True)
-#beye.show()
-scroller.setWidget(beye)
-scroller.show()
+	beye = BirdEye()
+	scroller = QScrollArea()
+	scroller.setWidgetResizable(True)
+	#beye.show()
+	scroller.setWidget(beye)
+	scroller.show()
+	scroller.setWindowTitle("BirdEye")
 
-try:
-	root = Path(app.arguments()[1]).resolve()
-except IndexError:
-	root = Path.cwd()
+	try:
+		root = Path(app.arguments()[1]).resolve()
+	except IndexError:
+		root = Path.cwd()
 
-scanner = Scanner(root)
-scanner.newdir.connect(beye.add_dir)
-scanner.newfile.connect(beye.add_file)
-scanner.start()
+	scanner = Scanner(root)
+	scanner.newdir.connect(beye.add_dir)
+	scanner.newfile.connect(beye.add_file)
+	scanner.start()
 
-app.exec()
+	app.exec()
