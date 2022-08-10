@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: WTFPL
 
 import locale
+import mimetypes
 from pathlib import Path
 import re
 import sys
@@ -52,7 +53,8 @@ def file_key(path):
 class Scanner(QThread):
 	@staticmethod
 	def is_image(entry):
-		return entry.name.endswith(".jpg")
+		type, _ = mimetypes.guess_type(entry.as_uri())
+		return type and type.startswith("image/")
 
 	def __init__(self, root):
 		super().__init__()
