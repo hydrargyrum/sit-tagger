@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: WTFPL
 
+import locale
 from pathlib import Path
+import re
 import sys
 
 from PyQt5.QtCore import *
@@ -18,6 +20,33 @@ PICS = {}
 THUMBS = {}
 COLUMNS = 8
 NULLPIX = None
+
+
+def extract_ints(line):
+	ret = []
+	for part_str in re.findall(r"\D+|\d+", line):
+		try:
+			part_as_num = int(part_str)
+		except ValueError:
+		# not a number, keep as is
+			ret.append((1, part_str))
+		else:
+			ret.append((0, part_as_num))
+
+	return tuple(ret)
+
+
+def collate_strs(tup):
+	return tuple(
+		(type, part)
+		if type == 0
+		else (type, locale.strxfrm(part.rstrip("\x00")))
+		for type, part in tup
+	)
+
+
+def file_key(path):
+	return collate_strs(extract_ints(path.name))
 
 
 class Scanner(QThread):
@@ -38,7 +67,7 @@ class Scanner(QThread):
 	def scan(self, root):
 		dirs = []
 
-		for sub in root.iterdir():
+		for sub in sorted(root.iterdir(), key=file_key):
 			if sub.is_dir():
 				# files then dirs
 				dirs.append(sub)
