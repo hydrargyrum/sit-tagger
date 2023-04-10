@@ -1,0 +1,76 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sittagger"
+dynamic = ["version"]
+description = "Image viewer with user-labels tag database"
+readme = "README.rst"
+license = "WTFPL"
+requires-python = ">=3.4"
+keywords = [
+    "browser",
+    "database",
+    "image",
+    "label",
+    "labelling",
+    "photo",
+    "python",
+    "tag",
+    "tagging",
+    "viewer",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: X11 Applications :: Qt",
+    "Intended Audience :: End Users/Desktop",
+    "License :: Public Domain",
+    "Topic :: Desktop Environment :: File Managers",
+    "Topic :: Multimedia :: Graphics :: Viewers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.4",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = [
+    "PyQt5",
+    "pyxdg",
+    "vignette",
+]
+
+[[project.authors]]
+name = "Hg"
+email = "dev@indigo.re"
+
+[project.scripts]
+sit-tagger-cli = "sittagger.cli:main"
+
+[project.gui-scripts]
+sit-tagger = "sittagger.app:main"
+
+[project.urls]
+Homepage = "https://indigo.re/sit-tagger/"
+Project = "https://github.com/hydrargyrum/sit-tagger"
+PyPI = "https://pypi.org/project/sittagger/"
+
+[tool.hatch.version]
+path = "sittagger/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/sittagger",
+    "/sittagger.png",
+    "/sittagger.desktop",
+]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"sittagger.png" = "share/icons/hicolor/128x128/apps/sittagger.png"
+"sittagger.desktop" = "share/applications/sittagger.desktop"
+
