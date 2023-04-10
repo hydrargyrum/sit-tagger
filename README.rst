@@ -57,3 +57,9 @@ Remove all tags from a file::
 
     sit-tagger-cli untrack-files some/file.jpg
 
+Install
+-------
+
+Using ``pip install sittagger``_.
+
+.. _pip install sittagger: https://pypi.org/project/sittagger/
