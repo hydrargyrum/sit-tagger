@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from PyQt5.QtCore import QDir, pyqtSlot as Slot, Qt, pyqtSignal as Signal, QMimeData
+from PyQt5.QtCore import QDir, pyqtSlot as Slot, Qt, pyqtSignal as Signal, QMimeData, QCoreApplication
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
 	QTreeView, QFileSystemModel, QAction, QInputDialog, QLineEdit,
@@ -209,3 +209,9 @@ class DirTreeView(QTreeView):
 			model.setFilter(model.filter() | QDir.Hidden)
 		else:
 			model.setFilter(model.filter() & ~QDir.Hidden)
+
+	def wheelEvent(self, event):
+		if event.modifiers() & Qt.ShiftModifier:
+			QCoreApplication.sendEvent(self.horizontalScrollBar(), event)
+		else:
+			super().wheelEvent(event)
