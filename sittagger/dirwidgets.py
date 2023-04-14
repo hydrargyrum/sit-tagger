@@ -6,7 +6,7 @@ from PyQt5.QtCore import QDir, pyqtSlot as Slot, Qt, pyqtSignal as Signal, QMime
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
 	QTreeView, QFileSystemModel, QAction, QInputDialog, QLineEdit,
-	QMessageBox,
+	QMessageBox, QHeaderView,
 )
 
 from .fileoperationdialog import FileOperationProgressDialog
@@ -91,6 +91,10 @@ class DirTreeView(QTreeView):
 		self.setModel(mdl)
 		mdl.fileOperation.connect(self.modelFileOperation)
 
+		# all sections/columns but "filename" are hidden, so filename is the last section
+		# it must not be auto-stretched if we want it to auto-expand past the widget's size
+		self.header().setStretchLastSection(False)
+		self.header().setSectionResizeMode(QHeaderView.ResizeToContents)
 		for col in range(1, self.header().count()):
 			self.setColumnHidden(col, True)
 
