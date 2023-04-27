@@ -2,10 +2,11 @@
 
 from pathlib import Path
 
-from PyQt5.QtCore import QDir, pyqtSlot as Slot, Qt, pyqtSignal as Signal, QMimeData, QCoreApplication
-from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import (
-	QTreeView, QFileSystemModel, QAction, QInputDialog, QLineEdit,
+from PyQt6.QtCore import QDir, pyqtSlot as Slot, Qt, pyqtSignal as Signal, QMimeData, QCoreApplication
+from PyQt6.QtCore import QTimer
+from PyQt6.QtGui import QKeySequence, QAction, QFileSystemModel
+from PyQt6.QtWidgets import (
+	QTreeView, QInputDialog, QLineEdit,
 	QMessageBox, QHeaderView,
 )
 
@@ -18,7 +19,7 @@ class FSModelWithDND(QFileSystemModel):
 	def flags(self, qidx):
 		flags = super().flags(qidx)
 		if qidx.isValid():
-			flags |= Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled
+			flags |= Qt.ItemFlag.ItemIsDragEnabled | Qt.ItemFlag.ItemIsDropEnabled
 		return flags
 
 	def mimeTypes(self):
@@ -36,7 +37,7 @@ class FSModelWithDND(QFileSystemModel):
 		return ret
 
 	def supportedDropActions(self):
-		return Qt.CopyAction | Qt.MoveAction
+		return Qt.DropAction.CopyAction | Qt.DropAction.MoveAction
 
 	def canDropMimeData(self, qmime, action, row, column, parent_qidx):
 		if column > 0 or row > -1:
@@ -68,9 +69,9 @@ class FSModelWithDND(QFileSystemModel):
 
 		parent_path = Path(self.filePath(parent_qidx))
 
-		if action == Qt.MoveAction:
+		if action == Qt.DropAction.MoveAction:
 			op = "cut"
-		elif action == Qt.CopyAction:
+		elif action == Qt.DropAction.CopyAction:
 			op = "copy"
 		else:
 			raise NotImplementedError()
@@ -87,21 +88,21 @@ class DirTreeView(QTreeView):
 		super().__init__(*args, **kwargs)
 
 		mdl = FSModelWithDND(parent=self)
-		mdl.setFilter(QDir.AllDirs | QDir.Drives | QDir.NoDotAndDotDot)
+		mdl.setFilter(QDir.Filter.AllDirs | QDir.Filter.Drives | QDir.Filter.NoDotAndDotDot)
 		self.setModel(mdl)
 		mdl.fileOperation.connect(self.modelFileOperation)
 
 		# all sections/columns but "filename" are hidden, so filename is the last section
 		# it must not be auto-stretched if we want it to auto-expand past the widget's size
 		self.header().setStretchLastSection(False)
-		self.header().setSectionResizeMode(QHeaderView.ResizeToContents)
+		self.header().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
 		for col in range(1, self.header().count()):
 			self.setColumnHidden(col, True)
 
 		# actions
 		action = QAction(self.tr("&Rename folder..."), self)
 		action.setShortcut(QKeySequence("F2"))
-		action.setShortcutContext(Qt.WidgetShortcut)
+		action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
 		action.triggered.connect(self.popRenameSelected)
 		self.addAction(action)
 
@@ -114,7 +115,7 @@ class DirTreeView(QTreeView):
 		action.toggled.connect(self.toggleHidden)
 		self.addAction(action)
 
-		self.setContextMenuPolicy(Qt.ActionsContextMenu)
+		self.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
 
 	def setRootPath(self, path):
 		self.root_path = path
@@ -123,7 +124,7 @@ class DirTreeView(QTreeView):
 
 	def openTo(self, path):
 		qidx = self.model().index(path)
-		self.scrollTo(qidx, self.PositionAtCenter)
+		self.scrollTo(qidx, QTreeView.ScrollHint.PositionAtCenter)
 
 	def selectPath(self, path):
 		qidx = self.model().index(path)
@@ -141,7 +142,7 @@ class DirTreeView(QTreeView):
 			self,
 			self.tr("Rename directory"),
 			self.tr("New name for directory"),
-			QLineEdit.Normal,
+			QLineEdit.EchoMode.Normal,
 			current.name
 		)
 
@@ -190,7 +191,7 @@ class DirTreeView(QTreeView):
 			self,
 			self.tr("Create directory"),
 			self.tr("Name for new directory"),
-			QLineEdit.Normal,
+			QLineEdit.EchoMode.Normal,
 			self.tr("new_folder")
 		)
 
@@ -210,12 +211,12 @@ class DirTreeView(QTreeView):
 	def toggleHidden(self, show):
 		model = self.model()
 		if show:
-			model.setFilter(model.filter() | QDir.Hidden)
+			model.setFilter(model.filter() | QDir.Filter.Hidden)
 		else:
-			model.setFilter(model.filter() & ~QDir.Hidden)
+			model.setFilter(model.filter() & ~QDir.Filter.Hidden)
 
 	def wheelEvent(self, event):
-		if event.modifiers() & Qt.ShiftModifier:
+		if event.modifiers() & Qt.KeyboardModifier.ShiftModifier:
 			QCoreApplication.sendEvent(self.horizontalScrollBar(), event)
 		else:
 			super().wheelEvent(event)

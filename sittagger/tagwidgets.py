@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: WTFPL
 
-from PyQt5.QtCore import Qt, pyqtSignal as Signal, pyqtSlot as Slot, QSortFilterProxyModel
-from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import QInputDialog, QVBoxLayout, QAction, QDialog, QListView, QLineEdit
+from PyQt6.QtCore import Qt, pyqtSignal as Signal, pyqtSlot as Slot, QSortFilterProxyModel
+from PyQt6.QtGui import QStandardItem, QStandardItemModel, QAction
+from PyQt6.QtWidgets import QInputDialog, QVBoxLayout, QDialog, QListView, QLineEdit
 
 
 class TagFilter(QLineEdit):
@@ -36,7 +36,7 @@ class TagEditor(QListView):
 		self.proxy.setSourceModel(self.data)
 		self.setModel(self.proxy)
 
-		self.setContextMenuPolicy(Qt.ActionsContextMenu)
+		self.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
 		act = QAction('&Create tag', self)
 		act.triggered.connect(self._createTag)
 		self.addAction(act)
@@ -78,8 +78,8 @@ class TagEditor(QListView):
 
 	def _createItem(self, name):
 		item = QStandardItem(name)
-		item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
-		item.setCheckState(Qt.Unchecked)
+		item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
+		item.setCheckState(Qt.CheckState.Unchecked)
 		return item
 
 	def setFiles(self, paths):
@@ -94,16 +94,16 @@ class TagEditor(QListView):
 
 	def _state(self, tag, tags_per_file):
 		if not tags_per_file:
-			return Qt.Unchecked
+			return Qt.CheckState.Unchecked
 
 		has_tag = any(tag in tags for tags in tags_per_file.values())
 		has_untag = any(tag not in tags for tags in tags_per_file.values())
 		if has_tag and has_untag:
-			return Qt.PartiallyChecked
+			return Qt.CheckState.PartiallyChecked
 		elif has_tag:
-			return Qt.Checked
+			return Qt.CheckState.Checked
 		elif has_untag:
-			return Qt.Unchecked
+			return Qt.CheckState.Unchecked
 		assert False
 
 		it = iter(tags_per_file.values())
@@ -111,16 +111,16 @@ class TagEditor(QListView):
 		for tags in it:
 			current = (tag in tags)
 			if first != current:
-				return Qt.PartiallyChecked
+				return Qt.CheckState.PartiallyChecked
 		if first:
-			return Qt.Checked
+			return Qt.CheckState.Checked
 		else:
-			return Qt.Unchecked
+			return Qt.CheckState.Unchecked
 
 	@Slot('QStandardItem*')
 	def _tagStateChanged(self, item):
 		with self.db:
-			if item.checkState() == Qt.Unchecked:
+			if item.checkState() == Qt.CheckState.Unchecked:
 				for path in self.paths:
 					self.db.untag_file(path, [item.text()])
 			else:
@@ -148,7 +148,7 @@ class TagChooser(QListView):
 
 		self.data.itemChanged.connect(self.changed)
 
-		self.setContextMenuPolicy(Qt.ActionsContextMenu)
+		self.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
 		act = QAction('&Refresh tags', self)
 		act.triggered.connect(self.refreshTags)
 		self.addAction(act)
@@ -158,23 +158,23 @@ class TagChooser(QListView):
 
 		for t in sorted(self.db.list_tags()):
 			item = QStandardItem(t)
-			item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
-			item.setCheckState(Qt.Unchecked)
+			item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
+			item.setCheckState(Qt.CheckState.Unchecked)
 			self.data.appendRow(item)
 
 	def setTags(self, tags):
 		for i in range(self.data.rowCount()):
 			item = self.data.item(i)
 			if item.text() in tags:
-				item.setCheckState(Qt.Checked)
+				item.setCheckState(Qt.CheckState.Checked)
 			else:
-				item.setCheckState(Qt.Unchecked)
+				item.setCheckState(Qt.CheckState.Unchecked)
 
 	def selectedTags(self):
 		tags = []
 		for i in range(self.data.rowCount()):
 			item = self.data.item(i)
-			if item.checkState() == Qt.Checked:
+			if item.checkState() == Qt.CheckState.Checked:
 				tags.append(item.text())
 		return tags
 

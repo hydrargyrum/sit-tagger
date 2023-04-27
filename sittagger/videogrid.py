@@ -3,19 +3,19 @@
 
 import sys
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QSplitter, QMainWindow, QApplication, QInputDialog, QFileDialog
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QSplitter, QMainWindow, QApplication, QInputDialog, QFileDialog
 
 from .videowidgets import BasicVideoWidget, VideoControl
 
 
 class GridManager(QSplitter):
 	def __init__(self, *args, **kwargs):
-		super().__init__(Qt.Horizontal, *args, **kwargs)
+		super().__init__(Qt.Orientation.Horizontal, *args, **kwargs)
 		self.addColumn()
 
 	def addColumn(self):
-		w = QSplitter(Qt.Vertical)
+		w = QSplitter(Qt.Orientation.Vertical)
 		self.addWidget(w)
 		w.splitterMoved.connect(self.subMoved)
 		return w
@@ -122,4 +122,4 @@ if __name__ == '__main__':
 		v.play()
 		w.centralWidget().addWidgetInGrid(v)
 
-	app.exec_()
+	app.exec()

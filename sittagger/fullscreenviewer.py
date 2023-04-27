@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: WTFPL
 
-from PyQt5.QtCore import (
+from PyQt6.QtCore import (
 	Qt, QEvent, pyqtSignal as Signal, pyqtSlot as Slot, QTimer, QPointF,
 )
-from PyQt5.QtGui import (
+from PyQt6.QtGui import (
 	QKeySequence, QPalette, QPixmap, QMovie, QIcon, QImageReader, QCursor,
 )
-from PyQt5.QtWidgets import QMainWindow, QScrollArea, QDockWidget, QToolBar, QLabel
+from PyQt6.QtWidgets import QMainWindow, QScrollArea, QDockWidget, QToolBar, QLabel, QFrame
 
 from .tagwidgets import TagEditor
 
@@ -44,10 +44,10 @@ class ImageViewer(QMainWindow):
 		self.toolbar.hide()
 
 		act = self.toolbar.addAction(QIcon.fromTheme('go-previous'), 'Previous')
-		act.setShortcut(QKeySequence(Qt.Key_Backspace))
+		act.setShortcut(QKeySequence(Qt.Key.Key_Backspace))
 		act.triggered.connect(self.showPreviousFile)
 		act = self.toolbar.addAction(QIcon.fromTheme('go-next'), 'Next')
-		act.setShortcut(QKeySequence(Qt.Key_Space))
+		act.setShortcut(QKeySequence(Qt.Key.Key_Space))
 		act.triggered.connect(self.showNextFile)
 		self.toolbar.addSeparator()
 
@@ -73,7 +73,7 @@ class ImageViewer(QMainWindow):
 
 		self.docktagger = AutoHideDock()
 		self.docktagger.setWidget(self.tageditor)
-		self.addDockWidget(Qt.LeftDockWidgetArea, self.docktagger)
+		self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.docktagger)
 		self.docktagger.hide()
 
 		self.scrollview.topZoneEntered.connect(self.toolbar.show)
@@ -82,14 +82,14 @@ class ImageViewer(QMainWindow):
 		self.scrollview.leftZoneLeft.connect(self.docktagger.hide)
 
 	def eventFilter(self, sview, ev):
-		if ev.type() == QEvent.KeyPress:
-			if ev.key() == Qt.Key_Escape:
+		if ev.type() == QEvent.Type.KeyPress:
+			if ev.key() == Qt.Key.Key_Escape:
 				self.fullscreenAction.setChecked(False)
 				return True
-			elif ev.key() in [Qt.Key_PageUp, Qt.Key_Backspace]: # qactions
+			elif ev.key() in [Qt.Key.Key_PageUp, Qt.Key.Key_Backspace]: # qactions
 				self.showPreviousFile()
 				return True
-			elif ev.key() in [Qt.Key_PageDown, Qt.Key_Space]:
+			elif ev.key() in [Qt.Key.Key_PageDown, Qt.Key.Key_Space]:
 				self.showNextFile()
 				return True
 		return super().eventFilter(sview, ev)
@@ -100,7 +100,7 @@ class ImageViewer(QMainWindow):
 
 		self.setFile(currentFile)
 		if self.isHidden():
-			#~ self.setWindowState(self.windowState() | Qt.WindowMaximized)
+			#~ self.setWindowState(self.windowState() | Qt.WindowState.WindowMaximized)
 			#~ self.show()
 			self.fullscreenAction.setChecked(False)
 			self.fullscreenAction.setChecked(True)
@@ -157,16 +157,16 @@ class ImageViewerCenter(QScrollArea):
 
 		imgWidget = QLabel()
 		imgWidget.setMouseTracking(True)
-		imgWidget.setAlignment(Qt.AlignCenter)
+		imgWidget.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.setWidget(imgWidget)
 
-		self.setAlignment(Qt.AlignCenter)
+		self.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.setMouseTracking(True)
-		self.setFrameShape(self.NoFrame)
+		self.setFrameShape(QFrame.Shape.NoFrame)
 		self.setWidgetResizable(True)
 
 		pal = QPalette()
-		pal.setColor(QPalette.Window, Qt.black)
+		pal.setColor(QPalette.ColorRole.Window, Qt.GlobalColor.black)
 		self.setPalette(pal)
 
 		self.leftZone = False
@@ -189,14 +189,14 @@ class ImageViewerCenter(QScrollArea):
 			self.horizontalScrollBar().setValue(self.movingScrolls[0] - (p.x() - self.moving[0]))
 			self.verticalScrollBar().setValue(self.movingScrolls[1] - (p.y() - self.moving[1]))
 		else:
-			newLeft = (ev.x() < self.leftMargin)
+			newLeft = (ev.pos().x() < self.leftMargin)
 			if newLeft and not self.leftZone:
 				self.leftZoneEntered.emit()
 			elif self.leftZone and not newLeft:
 				self.leftZoneLeft.emit()
 			self.leftZone = newLeft
 
-			newTop = (ev.y() < self.topMargin)
+			newTop = (ev.pos().y() < self.topMargin)
 			if newTop and not self.topZone:
 				self.topZoneEntered.emit()
 			elif self.topZone and not newTop:
@@ -209,19 +209,19 @@ class ImageViewerCenter(QScrollArea):
 			self._rebuildZoom()
 
 	def keyPressEvent_(self, ev):
-		if ev.key() not in (Qt.Key_PageUp, Qt.Key_PageDown):
+		if ev.key() not in (Qt.Key.Key_PageUp, Qt.Key.Key_PageDown):
 			QScrollArea.keyPressEvent(self, ev)
 
 	def keyReleaseEvent_(self, ev):
-		if ev.key() == Qt.Key_PageUp:
+		if ev.key() == Qt.Key.Key_PageUp:
 			self.imageviewer.prevImage_s()
-		elif ev.key() == Qt.Key_PageDown:
+		elif ev.key() == Qt.Key.Key_PageDown:
 			self.imageviewer.nextImage_s()
 		else:
 			QScrollArea.keyReleaseEvent(self, ev)
 
 	def wheelEvent(self, event):
-		if not (event.modifiers() & Qt.ControlModifier):
+		if not (event.modifiers() & Qt.KeyboardModifier.ControlModifier):
 			return super().wheelEvent(event)
 
 		delta = event.angleDelta()
@@ -317,7 +317,7 @@ class ImageViewerCenter(QScrollArea):
 			self.oldZoomFactor = self.zoomFactor
 			self.zoomFactor = newpix.size().width() / float(self.originalPixmap.size().width())
 		elif self.zoomMode == ZOOM_FITCUT:
-			newpix = self._getScaledPixmap(self.viewport().size(), Qt.KeepAspectRatioByExpanding)
+			newpix = self._getScaledPixmap(self.viewport().size(), Qt.AspectRatioMode.KeepAspectRatioByExpanding)
 			self._setPixmap(newpix)
 			self.oldZoomFactor = self.zoomFactor
 			self.zoomFactor = newpix.size().width() / float(self.originalPixmap.size().width())
@@ -333,8 +333,8 @@ class ImageViewerCenter(QScrollArea):
 		# are not up to date yet, so we have to wait before restoring the relative scroll position
 		QTimer.singleShot(0, scroll_after_zoom)
 
-	def _getScaledPixmap(self, size, mode=Qt.KeepAspectRatio):
-		return self.originalPixmap.scaled(size, mode, Qt.SmoothTransformation)
+	def _getScaledPixmap(self, size, mode=Qt.AspectRatioMode.KeepAspectRatio):
+		return self.originalPixmap.scaled(size, mode, Qt.TransformationMode.SmoothTransformation)
 
 	def _setPixmap(self, pixmap):
 		self.widget().setPixmap(pixmap)

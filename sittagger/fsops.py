@@ -7,7 +7,7 @@ import shutil
 import subprocess
 from threading import Event
 
-from PyQt5.QtCore import QThread, pyqtSignal as Signal, pyqtSlot as Slot
+from PyQt6.QtCore import QThread, pyqtSignal as Signal, pyqtSlot as Slot
 import vignette
 
 

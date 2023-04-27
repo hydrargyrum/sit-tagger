@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: WTFPL
 
-from PyQt5.QtCore import pyqtSlot as Slot
-from PyQt5.QtWidgets import QProgressDialog
+from PyQt6.QtCore import pyqtSlot as Slot
+from PyQt6.QtWidgets import QProgressDialog
 
 
 class FileOperationProgressDialog(QProgressDialog):

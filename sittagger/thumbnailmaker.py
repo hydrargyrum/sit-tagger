@@ -3,7 +3,7 @@
 from collections import OrderedDict
 import sys
 
-from PyQt5.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, QProcess, QThread
+from PyQt6.QtCore import QObject, pyqtSlot as Slot, pyqtSignal as Signal, QProcess, QThread
 
 
 class ThumbnailMaker(QObject):

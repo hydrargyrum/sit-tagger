@@ -2,10 +2,10 @@
 
 import os.path
 
-from PyQt5.QtCore import pyqtSignal as Signal, pyqtSlot as Slot, QUrl, Qt
-from PyQt5.QtWidgets import QLabel, QWidget, QPushButton, QTableWidget, QTableWidgetItem, QSlider, QHBoxLayout, QVBoxLayout
-from PyQt5.QtMultimediaWidgets import QVideoWidget
-from PyQt5.QtMultimedia import (
+from PyQt6.QtCore import pyqtSignal as Signal, pyqtSlot as Slot, QUrl, Qt
+from PyQt6.QtWidgets import QLabel, QWidget, QPushButton, QTableWidget, QTableWidgetItem, QSlider, QHBoxLayout, QVBoxLayout
+from PyQt6.QtMultimediaWidgets import QVideoWidget
+from PyQt6.QtMultimedia import (
 	QMediaContent, QMediaPlayer, QMediaPlaylist,
 )
 
@@ -14,7 +14,7 @@ from .tagwidgets import TagChooserDialog
 
 class SeekSlider(QSlider):
 	def __init__(self, mp):
-		super().__init__(Qt.Horizontal)
+		super().__init__(Qt.Orientation.Horizontal)
 		self.mediaPlayer = mp
 		self.mediaPlayer.durationChanged.connect(self._setMax)
 		self.mediaPlayer.seekableChanged.connect(self.setEnabled)
@@ -262,7 +262,7 @@ class VideoTagEditor(QWidget):
 
 		dialog = TagChooserDialog(self.db)
 		dialog.setTags(list(taglist))
-		dialog.exec_()
+		dialog.exec()
 		taglist = dialog.selectedTags()
 		self.table.item(row, 0).setText(' '.join(taglist))
 		#~ self.saveTags()

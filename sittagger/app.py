@@ -8,12 +8,12 @@ from pathlib import Path
 import sys
 import os
 
-from PyQt5.QtCore import pyqtSlot as Slot, QUrl
-from PyQt5.QtGui import QIcon, QPixmap, QDesktopServices
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import pyqtSlot as Slot, QUrl
+from PyQt6.QtGui import QIcon, QPixmap, QDesktopServices
+from PyQt6.QtWidgets import (
 	QMainWindow, QListWidgetItem, QApplication, QAbstractItemView,
 )
-from PyQt5.uic import loadUiType
+from PyQt6.uic import loadUiType
 
 from . import dbtag
 from .fullscreenviewer import ImageViewer
@@ -68,7 +68,7 @@ class Win(Ui_MainWindow, QMainWindow):
 	def _init_imagelist(self):
 		self.imageList.itemSelectionChanged.connect(self._editTagsItems)
 		self.imageList.activated.connect(self._openFile)
-		self.imageList.setSelectionMode(QAbstractItemView.ExtendedSelection)
+		self.imageList.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
 		self.imageList.pasteRequested.connect(self._onListPaste)
 
 	def _init_tabs(self):
@@ -175,7 +175,7 @@ def main():
 	opts = parse_options(list(app.arguments())[1:])
 	win = Win(opts)
 	win.show()
-	app.exec_()
+	app.exec()
 
 
 if __name__ == '__main__':

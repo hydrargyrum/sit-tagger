@@ -6,8 +6,8 @@
 from urllib.parse import urlparse, unquote
 from pathlib import Path
 
-from PyQt5.QtGui import QGuiApplication
-from PyQt5.QtCore import QMimeData
+from PyQt6.QtGui import QGuiApplication
+from PyQt6.QtCore import QMimeData
 
 
 MIME_GNOME = "x-special/gnome-copied-files"

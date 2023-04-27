@@ -2,9 +2,9 @@
 
 import math
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmapCache, QTransform, QPixmap
-from PyQt5.QtWidgets import QGraphicsView, QGraphicsItem, QGraphicsScene, QGraphicsPixmapItem
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPixmapCache, QTransform, QPixmap
+from PyQt6.QtWidgets import QGraphicsView, QGraphicsItem, QGraphicsScene, QGraphicsPixmapItem
 
 
 MODE_MOVE = 0
@@ -74,7 +74,7 @@ class Image(ItemMixin, QGraphicsPixmapItem):
 		pix = QPixmap(path)
 		QPixmapCache.insert(path, pix)
 
-		self.setTransformationMode(Qt.SmoothTransformation)
+		self.setTransformationMode(Qt.TransformationMode.SmoothTransformation)
 
 		self.setPixmap(pix)
 
@@ -116,10 +116,10 @@ class Canvas(QGraphicsView):
 		self.scene().addItem(item)
 
 	def keyPressEvent(self, ev):
-		if ev.key() == Qt.Key_F1:
+		if ev.key() == Qt.Key.Key_F1:
 			self.scene().setMoveMode()
-		elif ev.key() == Qt.Key_F2:
+		elif ev.key() == Qt.Key.Key_F2:
 			self.scene().setZoomMode()
-		elif ev.key() == Qt.Key_F3:
+		elif ev.key() == Qt.Key.Key_F3:
 			self.scene().setRotMode()
 		return super().keyPressEvent(ev)

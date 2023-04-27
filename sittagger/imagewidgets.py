@@ -4,13 +4,13 @@ import difflib
 from pathlib import Path
 import re
 
-from PyQt5.QtCore import (
+from PyQt6.QtCore import (
 	QSize, Qt, pyqtSlot as Slot, pyqtSignal as Signal, QAbstractListModel, QVariant,
 	QModelIndex, QMimeData, QFileSystemWatcher,
 )
-from PyQt5.QtGui import QPixmap, QKeySequence, QPixmapCache, QColor
-from PyQt5.QtWidgets import (
-	QListView, QAction, QInputDialog, QLineEdit, QMessageBox,
+from PyQt6.QtGui import QPixmap, QKeySequence, QPixmapCache, QColor, QAction
+from PyQt6.QtWidgets import (
+	QListView, QInputDialog, QLineEdit, QMessageBox,
 )
 
 from .fileoperationdialog import FileOperationProgressDialog
@@ -56,9 +56,9 @@ class AbstractFilesModel(QAbstractListModel):
 	def data(self, qidx, role):
 		path = self.entries[qidx.row()]
 
-		if role == Qt.DisplayRole:
+		if role == Qt.ItemDataRole.DisplayRole:
 			return QVariant(path.name)
-		elif role == Qt.DecorationRole:
+		elif role == Qt.ItemDataRole.DecorationRole:
 			thumbnailmaker.maker.reprioritizeTask(str(path))
 
 			try:
@@ -66,7 +66,7 @@ class AbstractFilesModel(QAbstractListModel):
 			except KeyError:
 				return QVariant(self.emptypix)
 			return QVariant(self._pixmap(tpath))
-		elif role == Qt.UserRole:
+		elif role == Qt.ItemDataRole.UserRole:
 			return QVariant(str(path))
 		else:
 			return QVariant()
@@ -75,10 +75,10 @@ class AbstractFilesModel(QAbstractListModel):
 		flags = super().flags(qidx)
 		if qidx.isValid():
 			flags |= (
-				Qt.ItemIsSelectable
-				| Qt.ItemIsEnabled
-				| Qt.ItemIsDragEnabled
-				| Qt.ItemNeverHasChildren
+				Qt.ItemFlag.ItemIsSelectable
+				| Qt.ItemFlag.ItemIsEnabled
+				| Qt.ItemFlag.ItemIsDragEnabled
+				| Qt.ItemFlag.ItemNeverHasChildren
 			)
 		return flags
 
@@ -157,7 +157,7 @@ class AbstractFilesModel(QAbstractListModel):
 		self.thumbs[origpath] = thumbpath
 
 		qidx = self.index(idx)
-		self.dataChanged.emit(qidx, qidx, [Qt.DecorationRole])
+		self.dataChanged.emit(qidx, qidx, [Qt.ItemDataRole.DecorationRole])
 
 
 def key_name_ints(name):
@@ -190,7 +190,7 @@ class ThumbDirModel(AbstractFilesModel):
 	def flags(self, qidx):
 		flags = super().flags(qidx)
 		if not qidx.isValid():
-			flags |= Qt.ItemIsDropEnabled
+			flags |= Qt.ItemFlag.ItemIsDropEnabled
 		return flags
 
 	@Slot(str)
@@ -244,7 +244,7 @@ class ThumbDirModel(AbstractFilesModel):
 		return ret
 
 	def supportedDropActions(self):
-		return Qt.CopyAction | Qt.MoveAction
+		return Qt.DropAction.CopyAction | Qt.DropAction.MoveAction
 
 	def canDropMimeData(self, qmime, action, row, column, parent_qidx):
 		if column > 0:
@@ -270,9 +270,9 @@ class ThumbDirModel(AbstractFilesModel):
 		if not files:
 			return False
 
-		if action == Qt.MoveAction:
+		if action == Qt.DropAction.MoveAction:
 			op = "cut"
-		elif action == Qt.CopyAction:
+		elif action == Qt.DropAction.CopyAction:
 			op = "copy"
 		else:
 			raise NotImplementedError()
@@ -313,35 +313,35 @@ class ImageList(QListView):
 
 		action = QAction(self.tr("Re&name"), self)
 		action.setShortcut(QKeySequence("F2"))
-		action.setShortcutContext(Qt.WidgetShortcut)
+		action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
 		action.triggered.connect(self.popRenameSelected)
 		self.addAction(action)
 
 		action = QAction(self.tr("&Copy files"), self)
-		action.setShortcut(QKeySequence(QKeySequence.Copy))
-		action.setShortcutContext(Qt.WidgetShortcut)
+		action.setShortcut(QKeySequence(QKeySequence.StandardKey.Copy))
+		action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
 		action.triggered.connect(self.markForCopy)
 		self.addAction(action)
 
 		action = QAction(self.tr("Cut files"), self)
-		action.setShortcut(QKeySequence(QKeySequence.Cut))
-		action.setShortcutContext(Qt.WidgetShortcut)
+		action.setShortcut(QKeySequence(QKeySequence.StandardKey.Cut))
+		action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
 		action.triggered.connect(self.markForCut)
 		self.addAction(action)
 
 		action = QAction(self.tr("&Paste files"), self)
-		action.setShortcut(QKeySequence(QKeySequence.Paste))
-		action.setShortcutContext(Qt.WidgetShortcut)
+		action.setShortcut(QKeySequence(QKeySequence.StandardKey.Paste))
+		action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
 		action.triggered.connect(self.pasteRequested)
 		self.addAction(action)
 
 		action = QAction(self.tr("Trash selected"), self)
-		action.setShortcut(QKeySequence(QKeySequence.Delete))
-		action.setShortcutContext(Qt.WidgetShortcut)
+		action.setShortcut(QKeySequence(QKeySequence.StandardKey.Delete))
+		action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
 		action.triggered.connect(self.trashSelected)
 		self.addAction(action)
 
-		self.setContextMenuPolicy(Qt.ActionsContextMenu)
+		self.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
 
 	def selectionChanged(self, new, old):
 		self.itemSelectionChanged.emit()
@@ -352,7 +352,11 @@ class ImageList(QListView):
 		super().showEvent(ev)
 		self.verticalScrollBar().setSingleStep(32)
 
-	acceptedMouseButtons = {Qt.LeftButton, Qt.RightButton, Qt.MiddleButton}
+	acceptedMouseButtons = {
+		Qt.MouseButton.LeftButton,
+		Qt.MouseButton.RightButton,
+		Qt.MouseButton.MiddleButton,
+	}
 
 	def mousePressEvent(self, ev):
 		if ev.button() in self.acceptedMouseButtons:
@@ -391,7 +395,7 @@ class ImageList(QListView):
 			self,
 			self.tr("Rename file"),
 			self.tr("New name for file"),
-			QLineEdit.Normal,
+			QLineEdit.EchoMode.Normal,
 			current.name
 		)
 
@@ -415,7 +419,7 @@ class ImageList(QListView):
 
 	def selectedFiles(self):
 		return [
-			qidx.data(Qt.UserRole)
+			qidx.data(Qt.ItemDataRole.UserRole)
 			for qidx in self.selectedIndexes()
 		]
 
@@ -458,7 +462,7 @@ class ImageList(QListView):
 			self.tr("Send to trash?"),
 			self.tr("Are you sure you want to send %d item(s) to trash?") % len(paths),
 		)
-		if button != QMessageBox.Yes:
+		if button != QMessageBox.StandardButton.Yes:
 			return
 
 		trash_items(paths)

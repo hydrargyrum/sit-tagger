@@ -7,9 +7,9 @@ from pathlib import Path
 import re
 import sys
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PyQt6.QtCore import *
+from PyQt6.QtGui import *
+from PyQt6.QtWidgets import *
 
 Signal = pyqtSignal
 Slot = pyqtSlot
@@ -122,8 +122,8 @@ class LazyImageView(FileButton):
 			else:
 				pix = pix.scaled(
 					NULLPIX.size(),
-					Qt.KeepAspectRatio,
-					Qt.SmoothTransformation,
+					Qt.AspectRatioMode.KeepAspectRatio,
+					Qt.TransformationMode.SmoothTransformation,
 				)
 
 			QPixmapCache.insert(self.thumb, pix)
@@ -142,8 +142,8 @@ class LazyImageView(FileButton):
 			option.initFrom(self)
 			option.backgroundColor = self.palette().color(QPalette.Background)
 			option.iconSize = pix.size()
-			#pnt.drawPrimitive(int(QStyle.CE_PushButton), option)
-			#pnt.drawControl(QStyle.CE_PushButton, option)
+			#pnt.drawPrimitive(int(QStyle.ControlElement.CE_PushButton), option)
+			#pnt.drawControl(QStyle.ControlElement.CE_PushButton, option)
 
 			pnt.drawItemPixmap(option.rect, Qt.AlignCenter, pix)
 
@@ -167,7 +167,7 @@ class DirView(QWidget):
 		self.layout().addWidget(LazyImageView(sub), row * 2, col, Qt.AlignCenter)
 
 		label = FileButton(sub, label=sub.name)
-		label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Minimum)
+		label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 		#label.setWordWrap(True)
 		self.layout().addWidget(label, row * 2 + 1, col)
 
@@ -200,7 +200,7 @@ if __name__ == "__main__":
 	app = QApplication(sys.argv)
 	#NULLPIX = QPixmap(QSize(256, 256))
 	NULLPIX = QPixmap(QSize(128, 128))
-	NULLPIX.fill(Qt.black)
+	NULLPIX.fill(Qt.GlobalColor.black)
 
 	beye = BirdEye()
 	scroller = QScrollArea()
