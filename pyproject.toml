@@ -57,7 +57,7 @@ sit-tagger = "sittagger.app:main"
 
 [project.urls]
 Homepage = "https://indigo.re/sit-tagger/"
-Project = "https://github.com/hydrargyrum/sit-tagger"
+Project = "https://gitlab.com/hydrargyrum/sit-tagger"
 PyPI = "https://pypi.org/project/sittagger/"
 
 [tool.hatch.version]
