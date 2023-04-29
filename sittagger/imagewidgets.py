@@ -177,6 +177,12 @@ def key_name_ints(name):
 	return tuple(parts)
 
 
+def _clear_watcher(watcher):
+	paths = [*watcher.directories(), *watcher.files()]
+	if paths:
+		watcher.removePaths(paths)
+
+
 class ThumbDirModel(AbstractFilesModel):
 	"""Model that returns files from a directory"""
 
@@ -203,8 +209,7 @@ class ThumbDirModel(AbstractFilesModel):
 
 	def setPath(self, path):
 		self.clearEntries()
-		self.watcher.removePaths(self.watcher.directories())
-		self.watcher.removePaths(self.watcher.files())
+		_clear_watcher(self.watcher)
 
 		self.path = Path(path)
 
@@ -218,8 +223,7 @@ class ThumbDirModel(AbstractFilesModel):
 
 	def refreshDir(self):
 		# TODO: avoid code duplication with setPath
-		self.watcher.removePaths(self.watcher.directories())
-		self.watcher.removePaths(self.watcher.files())
+		_clear_watcher(self.watcher)
 
 		files = sorted(
 			filter(lambda p: p.is_file(), self.path.iterdir()),
