@@ -17,7 +17,7 @@ class FileOperationProgressDialog(QProgressDialog):
 	def setOp(self, op):
 		self.op = op
 		self.op.processing.connect(self.onProgress)
-		self.op.started.connect(self.exec_)
+		self.op.started.connect(self.exec)
 		self.op.finished.connect(self.accept)
 		self.canceled.connect(self.op.cancel)
 
