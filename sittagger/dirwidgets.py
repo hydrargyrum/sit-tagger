@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
 )
 
 from .fileoperationdialog import FileOperationProgressDialog
-from .fsops import rename_folder, FileOperation
+from .fsops import rename_folder, FileOperation, trash_items, can_trash
 from .fm_interop import ClipQt, get_files_clipboard, MIME_LIST, _parse_url
 
 
@@ -110,6 +110,10 @@ class DirTreeView(QTreeView):
 		act.triggered.connect(self._createFolder)
 		self.addAction(act)
 
+		act = QAction(self.tr("Trash folder..."), self)
+		act.triggered.connect(self._trashFolder)
+		self.addAction(act)
+
 		action = QAction(self.tr("Show &hidden folders"), self)
 		action.setCheckable(True)
 		action.toggled.connect(self.toggleHidden)
@@ -182,6 +186,27 @@ class DirTreeView(QTreeView):
 		dlg.setModal(True)
 		treeop.setParent(dlg)
 		dlg.start()
+
+	@Slot()
+	def _trashFolder(self):
+		current = Path(self.selectedPath()).absolute()
+		if not can_trash():
+			QMessageBox.error(
+				self,
+				self.tr("Trash error"),
+				self.tr("trash-put is not installed, cannot trash files"),
+			)
+			return
+
+		button = QMessageBox.question(
+			self,
+			self.tr("Send to trash?"),
+			self.tr("Are you sure you want to send this to trash?\n%s") % current,
+		)
+		if button != QMessageBox.StandardButton.Yes:
+			return
+
+		trash_items([current])
 
 	@Slot()
 	def _createFolder(self):
