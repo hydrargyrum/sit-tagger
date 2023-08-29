@@ -60,6 +60,6 @@ Remove all tags from a file::
 Install
 -------
 
-Using ``pip install sittagger``.
+Using ``pipx install sittagger``.
 
 <https://pypi.org/project/sittagger/>
