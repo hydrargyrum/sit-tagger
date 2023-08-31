@@ -219,7 +219,8 @@ class ThumbDirModel(AbstractFilesModel):
 		)
 		self.setEntries(files)
 		self.watcher.addPath(str(self.path))
-		self.watcher.addPaths(str(p) for p in files)
+		if files:
+			self.watcher.addPaths(str(p) for p in files)
 
 	def refreshDir(self):
 		# TODO: avoid code duplication with setPath
@@ -231,7 +232,8 @@ class ThumbDirModel(AbstractFilesModel):
 		)
 		self.setEntriesDiff(files)
 		self.watcher.addPath(str(self.path))
-		self.watcher.addPaths(str(p) for p in files)
+		if files:
+			self.watcher.addPaths(str(p) for p in files)
 
 	def mimeTypes(self):
 		return [MIME_LIST]
