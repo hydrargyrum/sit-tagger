@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: WTFPL
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, RawTextHelpFormatter
+from textwrap import dedent
 import os
 import sys
 
@@ -22,8 +23,9 @@ def build_parser():
 
 def main():
 	def do_query():
-		if not args.items:
-			parser.error('at least one tag should be given')
+		if not args.items or args.items in (['-h'], ['--help']):
+			sub_query.print_help()
+			sub_query.error('at least one tag should be given')
 
 		for file in db.find_files_by_tags(args.items):
 			print(file)
@@ -37,6 +39,10 @@ def main():
 			print(file, '=', '[%s]' % ', '.join(db.find_tags_by_file(file)))
 
 	def do_set():
+		if not args.items or args.items in (['-h'], ['--help']):
+			sub_set.print_help()
+			sub_set.error("at least one file should be provided")
+
 		to_add = set()
 		to_del = set()
 		files = []
@@ -49,9 +55,11 @@ def main():
 				files.append(item)
 
 		if not files:
-			parser.error('at least one file should be provided')
+			sub_set.print_help()
+			sub_set.error('at least one file should be provided')
 		elif not to_add and not to_del:
-			parser.error('at least one tag should be added or removed')
+			sub_set.print_help()
+			sub_set.error('at least one tag should be added or removed')
 
 		err = 0
 		for file in files:
@@ -99,16 +107,50 @@ def main():
 	parser = build_parser()
 	subs = parser.add_subparsers(dest='subcommand', required=True)
 
-	sub = subs.add_parser('set', add_help=False, prefix_chars='^')
-	sub.add_argument('items', nargs='+')
+	sub_set = sub = subs.add_parser(
+		'set', add_help=False, prefix_chars='^',
+		description='Set/unset tags',
+		epilog=dedent('''
+			Example:
+
+				%(prog)s set +foo -bar some_file.jpg
+
+			will add "foo" tag to "some_file.jpg" and delete "bar" tag from "some_file.jpg"
+		'''),
+		formatter_class=RawTextHelpFormatter,
+	)
+	sub.add_argument(
+		'items', nargs='*', metavar='ITEM',
+		help=dedent('''
+			an ITEM can be either:
+			- a filename to manipulate it
+			- or "+TAG" to add TAG
+			- or "-TAG" to remove a TAG
+		'''),
+	)
 	sub.set_defaults(func=do_set)
 
-	sub = subs.add_parser('query', add_help=False, prefix_chars='^')
-	sub.add_argument('items', nargs='+')
+	sub_query = sub = subs.add_parser(
+		'query', add_help=False, prefix_chars='^',
+		description='Search files matching TAGs',
+		epilog=dedent('''
+			Example:
+
+				%(prog)s query foo bar
+
+			will list files having both "foo" AND "bar" tags
+		'''),
+		formatter_class=RawTextHelpFormatter,
+	)
+	sub.add_argument(
+		'items', nargs='*',
+		metavar='TAG',
+		help='tags that should be searched',
+	)
 	sub.set_defaults(func=do_query)
 
 	sub = subs.add_parser('show', description='Show tags associated to files')
-	sub.add_argument('items', nargs='+')
+	sub.add_argument('items', nargs='+', metavar='file')
 	sub.set_defaults(func=do_show)
 
 	sub = subs.add_parser('rename-tag', description='Rename a tag (and keep linked files to it)')
@@ -128,7 +170,7 @@ def main():
 	sub = subs.add_parser('list-files', description='List tagged files')
 	sub.set_defaults(func=do_list_files)
 
-	sub = subs.add_parser('untrack-files', description='Unlink all tags from a file')
+	sub = subs.add_parser('untrack-files', description='Unlink all tags from a file (does not remove files on-disk)')
 	sub.add_argument('items', nargs='+')
 	sub.set_defaults(func=do_untrack_files)
 
@@ -150,4 +192,3 @@ def main():
 
 if __name__ == '__main__':
 	sys.exit(main())
-
