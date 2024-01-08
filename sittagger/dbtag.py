@@ -124,7 +124,7 @@ class Db:
 		items = ','.join('?' * len(tags))
 		params = list(tags) + [len(tags)]
 		for row in self.db.execute('select file from tags_files where tag in (%s)'
-					   ' group by file having count(*) = ?' % items, params):
+					   ' group by file having count(distinct tag) = ?' % items, params):
 			yield row[0]
 
 	@iter2list
