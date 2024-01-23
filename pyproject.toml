@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "sittagger"
 dynamic = ["version"]
 description = "Image viewer with user-labels tag database"
-readme = "README.rst"
+readme = "README.md"
 license = "WTFPL"
 requires-python = ">=3.4"
 keywords = [
@@ -73,4 +73,3 @@ include = [
 [tool.hatch.build.targets.wheel.shared-data]
 "sittagger.png" = "share/icons/hicolor/128x128/apps/sittagger.png"
 "sittagger.desktop" = "share/applications/sittagger.desktop"
-
