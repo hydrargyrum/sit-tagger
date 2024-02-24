@@ -39,7 +39,8 @@ class ThumbnailMaker(QObject):
 		proc.input = path
 		proc.readyReadStandardOutput.connect(self.hasOutput)
 		proc.finished.connect(self.finished)
-		proc.start(sys.executable, ['-m', 'vignette', path])
+		cmd = ["nice", sys.executable, '-m', 'vignette', path]
+		proc.start(cmd[0], cmd[1:])
 		self.running += 1
 
 	@Slot()
