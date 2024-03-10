@@ -15,8 +15,14 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
     <item>
      <widget class="QSplitter" name="hSplitter">
+      <property name="lineWidth">
+       <number>0</number>
+      </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
