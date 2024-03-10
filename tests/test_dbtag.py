@@ -92,3 +92,35 @@ def test_rename_folder(db, a_few_tags):
 	assert set(db.find_tags_by_file("/other/new")) == {"tag1", "tag3"}
 	assert set(db.find_tags_by_file("/foo")) == set()
 	assert set(db.list_files()) == {"/other/new", "/bar"}
+
+
+def test_caption_get_set(db, a_few_tags):
+	assert db.get_caption("/foo") is None
+
+	caption = "#tag3 test #tag4"
+	db.set_caption("/foo", caption)
+	assert db.get_caption("/foo") == caption
+	assert set(db.find_tags_by_file("/foo")) == {"tag3", "tag4"}
+
+	db.tag_file("/foo", ["tag1"])
+	assert db.get_caption("/foo") == "#tag3 test #tag4 #tag1"
+
+	db.untag_file("/foo", ["tag4"])
+	assert db.get_caption("/foo") == "#tag3 test #tag1"
+
+	db.set_caption("/foo", None)
+	assert not db.get_caption("/foo")
+	assert set(db.find_tags_by_file("/foo")) == {"tag1", "tag3"}
+
+
+def test_caption_rename_tag(db, a_few_tags):
+	assert db.get_caption("/foo") is None
+
+	db.set_caption("/foo", "#tag3 test #tag4")
+	db.rename_tag("tag3", "tag1")
+
+	assert db.get_caption("/foo") == "#tag1 test #tag4"
+
+	db.rename_file("/foo", "/bar")
+
+	assert db.get_caption("/bar") == "#tag1 test #tag4"
