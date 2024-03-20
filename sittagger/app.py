@@ -6,6 +6,8 @@ from importlib import import_module
 import mimetypes
 from pathlib import Path
 import sys
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 import os
 
 from PyQt6.QtCore import pyqtSlot as Slot, QUrl
@@ -160,6 +162,9 @@ def parse_options(args):
 	parser.add_argument('target', nargs='?', default=Path.cwd(), type=Path)
 	parser.set_defaults(filespath='/', db=default_db)
 	opts = parser.parse_args(args)
+
+	if str(opts.target).startswith("file:/"):
+		opts.target = Path(url2pathname(urlparse(str(opts.target)).path))
 	opts.target = opts.target.absolute()
 	return opts
 
