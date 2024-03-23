@@ -100,6 +100,18 @@ def main():
 
 		return err
 
+	def do_set_caption():
+		if args.keep_existing_tags:
+			existing_tags = db.find_tags_by_file(args.file)
+		db.set_caption(args.file, args.caption)
+		if args.keep_existing_tags:
+			db.tag_file(args.file, existing_tags)
+
+	def do_get_caption():
+		caption = db.get_caption(args.file)
+		if caption:
+			print(caption)
+
 	def do_rename_tag():
 		db.rename_tag(args.src, args.dst)
 
@@ -153,6 +165,20 @@ def main():
 		'''),
 	)
 	sub.set_defaults(func=do_set)
+
+	sub = subs.add_parser(
+		"get-caption", description="Get caption of file",
+	)
+	sub.add_argument("file", help="File whose caption will be shown")
+	sub.set_defaults(func=do_get_caption)
+
+	sub = subs.add_parser(
+		"set-caption", description="Set caption of file",
+	)
+	sub.add_argument("--keep-existing-tags", action="store_true")
+	sub.add_argument("file", help="File whose caption will be changed")
+	sub.add_argument("caption", help="New text caption (can contain #tags)")
+	sub.set_defaults(func=do_set_caption)
 
 	sub_query = sub = subs.add_parser(
 		'query', add_help=False, prefix_chars='^',
