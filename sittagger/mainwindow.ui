@@ -35,6 +35,9 @@
       <property name="acceptDrops">
        <bool>true</bool>
       </property>
+      <property name="whatsThis">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Files list&lt;/span&gt;&lt;/p&gt;&lt;p&gt;View files from the selected directory (see &lt;span style=&quot; font-weight:700;&quot;&gt;Folder tree&lt;/span&gt;) or matching selected tags (see &lt;span style=&quot; font-weight:700;&quot;&gt;Tag chooser&lt;/span&gt;). Right-click to rename a file or for more options.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
       <property name="dragEnabled">
        <bool>true</bool>
       </property>
@@ -90,12 +93,18 @@
      <height>20</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuWindow">
+   <widget class="QMenu" name="menuView">
     <property name="title">
      <string>View</string>
     </property>
    </widget>
-   <addaction name="menuWindow"/>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+   </widget>
+   <addaction name="menuView"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="captionEditorDockWidget">
@@ -121,6 +130,9 @@
           <property name="enabled">
            <bool>false</bool>
           </property>
+          <property name="whatsThis">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Caption editor&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Set caption text associated to the selected file (in the file list). The caption can contain #hashtags which will be selected as tags in the &lt;span style=&quot; font-weight:700;&quot;&gt;tag editor&lt;/span&gt;. Removing #hashtags from the caption will unselect tags in the &lt;span style=&quot; font-weight:700;&quot;&gt;tag editor&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="acceptRichText">
            <bool>false</bool>
           </property>
@@ -130,6 +142,9 @@
          <widget class="QToolButton" name="captionSaveButton">
           <property name="enabled">
            <bool>false</bool>
+          </property>
+          <property name="whatsThis">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save the caption text.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Save caption</string>
@@ -181,6 +196,9 @@
      </property>
      <item>
       <widget class="QTabWidget" name="tabWidget">
+       <property name="whatsThis">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a tab to choose whether the &lt;span style=&quot; font-weight:700;&quot;&gt;files list&lt;/span&gt; should display files from a directory or files matching a tag filter.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="currentIndex">
         <number>0</number>
        </property>
@@ -203,6 +221,9 @@
          </property>
          <item>
           <widget class="DirTreeView" name="dirChooser">
+           <property name="whatsThis">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Folder tree&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select a folder and the &lt;span style=&quot; font-weight:700;&quot;&gt;file list&lt;/span&gt; will show files in that folder. Right-click to rename a folder or for more options.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="dragEnabled">
             <bool>true</bool>
            </property>
@@ -241,6 +262,9 @@
          </property>
          <item>
           <widget class="TagFilter" name="tagChooserFilter">
+           <property name="whatsThis">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Filter the &lt;span style=&quot; font-weight:700;&quot;&gt;tag chooser&lt;/span&gt; list below to include only tags containing the text you enter here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="placeholderText">
             <string>Filter...</string>
            </property>
@@ -251,6 +275,9 @@
          </item>
          <item>
           <widget class="TagChooser" name="tagChooser">
+           <property name="whatsThis">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Tag chooser&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Select tags and the &lt;span style=&quot; font-weight:700;&quot;&gt;files list&lt;/span&gt; will display all files matching the selected tags.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="alternatingRowColors">
             <bool>true</bool>
            </property>
@@ -280,6 +307,9 @@
      </property>
      <item>
       <widget class="TagFilter" name="tagEditorFilter">
+       <property name="whatsThis">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Filter the &lt;span style=&quot; font-weight:700;&quot;&gt;tag editor&lt;/span&gt; list below to include only tags containing the text you enter here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="placeholderText">
         <string>Filter...</string>
        </property>
@@ -292,6 +322,9 @@
       <widget class="TagEditor" name="tagEditor">
        <property name="enabled">
         <bool>false</bool>
+       </property>
+       <property name="whatsThis">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Tag editor&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Associate (or remove) tags to the selected files in the &lt;span style=&quot; font-weight:700;&quot;&gt;files list&lt;/span&gt;. Right-click to create new tags or for more options.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="alternatingRowColors">
         <bool>true</bool>

@@ -10,10 +10,10 @@ from urllib.parse import urlparse
 from urllib.request import url2pathname
 import os
 
-from PyQt6.QtCore import pyqtSlot as Slot, QUrl
+from PyQt6.QtCore import pyqtSlot as Slot, QUrl, Qt
 from PyQt6.QtGui import QIcon, QPixmap, QDesktopServices
 from PyQt6.QtWidgets import (
-	QMainWindow, QListWidgetItem, QApplication, QAbstractItemView,
+	QMainWindow, QListWidgetItem, QApplication, QAbstractItemView, QWhatsThis,
 )
 from PyQt6.uic import loadUiType
 
@@ -45,6 +45,9 @@ class Win(Ui_MainWindow, QMainWindow):
 		self.setWindowIcon(QIcon(QPixmap(
 			str(Path(__file__).parent.with_name("sittagger.png"))
 		)))
+		self.setWindowFlags(
+			self.windowFlags() | Qt.WindowType.WindowContextHelpButtonHint
+		)
 
 		self.db = dbtag.Db(multithread=True)
 		self.db.open(options.db)
@@ -90,10 +93,11 @@ class Win(Ui_MainWindow, QMainWindow):
 		self.captionWidget.setDb(self.db)
 
 	def _init_menu(self):
-		menu = self.menuBar().actions()[0].menu()
-		menu.addAction(self.exploreDockWidget.toggleViewAction())
-		menu.addAction(self.tagEditorDockWidget.toggleViewAction())
-		menu.addAction(self.captionEditorDockWidget.toggleViewAction())
+		self.menuView.addAction(self.exploreDockWidget.toggleViewAction())
+		self.menuView.addAction(self.tagEditorDockWidget.toggleViewAction())
+		self.menuView.addAction(self.captionEditorDockWidget.toggleViewAction())
+
+		self.menuHelp.addAction(QWhatsThis.createAction(self))
 
 	def editTags(self, path):
 		self.tagEditor.setEnabled(True)
