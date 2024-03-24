@@ -75,7 +75,6 @@ class Win(Ui_MainWindow, QMainWindow):
 
 	def _init_tabs(self):
 		self.tabWidget.currentChanged.connect(self._tabSelected)
-		self.hSplitter.setStretchFactor(1, 1)
 
 	def _init_tagchooser(self):
 		self.tagChooser.setDb(self.db)
@@ -86,6 +85,9 @@ class Win(Ui_MainWindow, QMainWindow):
 		self.tagEditorFilter.setWidget(self.tagEditor)
 		self.tagEditor.changedTags.connect(self.tagChooser.refreshTags)
 
+		self.captionWidget.init_sigs()
+		self.captionWidget.setDb(self.db)
+
 	def editTags(self, path):
 		self.tagEditor.setEnabled(True)
 		self.tagEditor.setFile(path)
@@ -93,6 +95,7 @@ class Win(Ui_MainWindow, QMainWindow):
 	def editTagsItems(self, paths):
 		self.tagEditor.setEnabled(bool(paths))
 		self.tagEditor.setFiles(paths)
+		self.captionWidget.setFiles(paths)
 
 	def spawnViewer(self, files, currentFile):
 		viewer = ImageViewer(self.db, parent=self)
