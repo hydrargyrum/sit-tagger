@@ -90,9 +90,15 @@
      <height>20</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>View</string>
+    </property>
+   </widget>
+   <addaction name="menuWindow"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QDockWidget" name="dockWidget">
+  <widget class="QDockWidget" name="captionEditorDockWidget">
    <property name="windowTitle">
     <string>Edit selected files caption</string>
    </property>
@@ -149,7 +155,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidget_2">
+  <widget class="QDockWidget" name="exploreDockWidget">
    <property name="windowTitle">
     <string>Explore</string>
    </property>
@@ -257,7 +263,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidget_3">
+  <widget class="QDockWidget" name="tagEditorDockWidget">
    <property name="windowTitle">
     <string>&amp;Edit selected files tags</string>
    </property>

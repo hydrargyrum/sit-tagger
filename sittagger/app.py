@@ -55,6 +55,7 @@ class Win(Ui_MainWindow, QMainWindow):
 		self._init_tagchooser()
 		self._init_imagelist()
 		self._init_tabs()
+		self._init_menu()
 		self.viewer = None
 
 	def _init_dirchooser(self, folder):
@@ -87,6 +88,12 @@ class Win(Ui_MainWindow, QMainWindow):
 
 		self.captionWidget.init_sigs()
 		self.captionWidget.setDb(self.db)
+
+	def _init_menu(self):
+		menu = self.menuBar().actions()[0].menu()
+		menu.addAction(self.exploreDockWidget.toggleViewAction())
+		menu.addAction(self.tagEditorDockWidget.toggleViewAction())
+		menu.addAction(self.captionEditorDockWidget.toggleViewAction())
 
 	def editTags(self, path):
 		self.tagEditor.setEnabled(True)
