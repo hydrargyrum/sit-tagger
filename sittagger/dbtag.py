@@ -46,32 +46,32 @@ class Db:
 	def remove_file(self, path):
 		LOGGER.info("untracking file %r", path)
 		path = from_path(path)
-		self.db.execute('delete from tags_files where file = ?', (path,))
-		self.db.execute('delete from caption where file = ?', (path,))
+		self.db.execute('DELETE FROM tags_files WHERE file = ?', (path,))
+		self.db.execute('DELETE FROM caption WHERE file = ?', (path,))
 
 	def remove_tag(self, name):
 		LOGGER.info("untracking tag %r", name)
-		self.db.execute('delete from tags_files where tag = ?', (name,))
+		self.db.execute('DELETE FROM tags_files WHERE tag = ?', (name,))
 
 	def rename_tag(self, old, new):
 		LOGGER.info("renaming tag %r to %r", old, new)
 
 		for (file,) in self.db.execute(
-				'select distinct file from tags_files join caption using (file) '
-				+ 'where tag = ? and caption is not null', (old,)):
+				'SELECT DISTINCT file FROM tags_files JOIN caption USING (file) '
+				+ 'WHERE tag = ? AND caption IS NOT NULL', (old,)):
 			# the file has the old tag and has a caption: the old tag is in the caption
 			caption = self.get_caption(file)
 			caption = captiontools.rename_tag_in_caption(caption, old, new)
 			self._set_caption_base(file, caption)
 
-		self.db.execute('update tags_files set tag = ? where tag = ?', (new, old))
+		self.db.execute('UPDATE tags_files SET tag = ? WHERE tag = ?', (new, old))
 
 	def rename_file(self, old, new):
 		LOGGER.info("renaming file %r to %r", old, new)
 		old = from_path(old)
 		new = from_path(new)
-		self.db.execute('update caption set file = ? where file = ?', (new, old))
-		self.db.execute('update tags_files set file = ? where file = ?', (new, old))
+		self.db.execute('UPDATE caption SET file = ? WHERE file = ?', (new, old))
+		self.db.execute('UPDATE tags_files SET file = ? WHERE file = ?', (new, old))
 
 	def rename_folder(self, old, new):
 		LOGGER.info("renaming folder %r to %r", old, new)
@@ -85,17 +85,17 @@ class Db:
 		# don't use LIKE in WHERE because old could contain '%' or metacharacters
 		self.db.execute(
 			'''
-			update tags_files
-			set file = ? || substring(file, ?)
-			where substring(file, 1, ?) = ?
+			UPDATE tags_files
+			SET file = ? || SUBSTRING(file, ?)
+			WHERE SUBSTRING(file, 1, ?) = ?
 			''',
 			(new, len(old) + 1, len(old), old)
 		)
 		self.db.execute(
 			'''
-			update caption
-			set file = ? || substring(file, ?)
-			where substring(file, 1, ?) = ?
+			UPDATE caption
+			SET file = ? || SUBSTRING(file, ?)
+			WHERE SUBSTRING(file, 1, ?) = ?
 			''',
 			(new, len(old) + 1, len(old), old)
 		)
@@ -112,7 +112,7 @@ class Db:
 		path = from_path(path)
 
 		for tag in tags:
-			self.db.execute('insert or replace into tags_files (file, tag, start, end) values (?, ?, ?, ?)',
+			self.db.execute('INSERT OR REPLACE INTO tags_files (file, tag, start, end) VALUES (?, ?, ?, ?)',
 					(path, tag, start, end))
 
 		self._update_caption(path)
@@ -129,23 +129,23 @@ class Db:
 		path = from_path(path)
 
 		for tag in tags:
-			self.db.execute('delete from tags_files where file = ? and tag = ?',
+			self.db.execute('DELETE FROM tags_files WHERE file = ? AND tag = ?',
 					(path, tag))
 
 	untrack_file = remove_file
 
 	def list_tags(self):
-		for row in self.db.execute('select distinct tag from tags_files'):
+		for row in self.db.execute('SELECT DISTINCT tag FROM tags_files'):
 			yield row[0]
 
 	def list_files(self):
-		for row in self.db.execute('select distinct file from tags_files'):
+		for row in self.db.execute('SELECT DISTINCT file FROM tags_files'):
 			yield row[0]
 
 	@iter2list
 	def find_tags_by_file(self, path):
 		path = from_path(path)
-		for row in self.db.execute('select distinct tag from tags_files where file = ?', (path,)):
+		for row in self.db.execute('SELECT DISTINCT tag FROM tags_files WHERE file = ?', (path,)):
 			yield row[0]
 
 	@iter2list
@@ -154,20 +154,20 @@ class Db:
 			tags = [tags]
 		items = ','.join('?' * len(tags))
 		params = list(tags) + [len(tags)]
-		for row in self.db.execute('select file from tags_files where tag in (%s)'
-					   ' group by file having count(distinct tag) = ?' % items, params):
+		for row in self.db.execute('SELECT file FROM tags_files WHERE tag IN (%s)'
+					   ' GROUP BY file HAVING COUNT(DISTINCT tag) = ?' % items, params):
 			yield row[0]
 
 	@iter2list
 	def get_extras_for_file(self, path, tag):
 		path = from_path(path)
-		for row in self.db.execute('select start, end from tags_files where file = ? and tag = ?',
+		for row in self.db.execute('SELECT start, end FROM tags_files WHERE file = ? AND tag = ?',
 					   (path, tag)):
 			yield row[0], row[1]
 
 	def get_caption(self, path):
 		path = from_path(path)
-		for row in self.db.execute("select caption from caption where file = ?", (path,)):
+		for row in self.db.execute("SELECT caption FROM caption WHERE file = ?", (path,)):
 			return row[0]
 		return None
 
@@ -195,16 +195,16 @@ class Db:
 
 	def _set_caption_base(self, path, caption):
 		self.db.execute(
-			"insert or replace into caption (file, caption) values (?, ?)",
+			"INSERT OR REPLACE INTO caption (file, caption) VALUES (?, ?)",
 			(path, caption)
 		)
 
 	def do_migrations(self):
 		c = self.db.cursor()
-		c.execute('create table if not exists version (version integer primary key)')
+		c.execute('CREATE TABLE IF NOT EXISTS version (version INTEGER PRIMARY KEY)')
 
 		base_version = 0
-		for row in self.db.execute('select version from version'):
+		for row in self.db.execute('SELECT version FROM version'):
 			base_version = row[0]
 
 		for ver in range(base_version, max(UPGRADES) + 1):
@@ -212,7 +212,7 @@ class Db:
 			with self.db:
 				for stmt in UPGRADES[ver]:
 					self.db.execute(stmt)
-				self.db.execute('update version set version = ?', (ver + 1,))
+				self.db.execute('UPDATE version SET version = ?', (ver + 1,))
 
 
 # key: version to reach from preceding version
@@ -220,17 +220,17 @@ class Db:
 
 UPGRADES = {
 	0: [
-		'insert into version values(0)',
+		'INSERT INTO version VALUES(0)',
 		'''
-		create table if not exists tags_files (
+		CREATE TABLE IF NOT EXISTS tags_files (
 			file, tag, start, end,
-			constraint pk_tf primary key(file, tag, start, end)
+			CONSTRAINT pk_tf PRIMARY KEY(file, tag, start, end)
 		)
 		''',
-		'create index if not exists idx_tags on tags_files (tag)',
-		'create index if not exists idx_files on tags_files (file)',
+		'CREATE INDEX IF NOT EXISTS idx_tags ON tags_files (tag)',
+		'CREATE INDEX IF NOT EXISTS idx_files ON tags_files (file)',
 	],
 	1: [
-		"create table if not exists caption (file text primary key, caption text)",
+		"CREATE TABLE IF NOT EXISTS caption (file TEXT PRIMARY KEY, caption TEXT)",
 	],
 }
