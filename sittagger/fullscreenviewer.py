@@ -43,27 +43,52 @@ class ImageViewer(QMainWindow):
 		self.addToolBar(self.toolbar)
 		self.toolbar.hide()
 
-		act = self.toolbar.addAction(QIcon.fromTheme('go-previous'), 'Previous')
-		act.setShortcut(QKeySequence(Qt.Key.Key_Backspace))
-		act.triggered.connect(self.showPreviousFile)
-		act = self.toolbar.addAction(QIcon.fromTheme('go-next'), 'Next')
-		act.setShortcut(QKeySequence(Qt.Key.Key_Space))
-		act.triggered.connect(self.showNextFile)
+		action = self.toolbar.addAction(QIcon.fromTheme('go-previous'), 'Previous')
+		action.setShortcuts([
+			QKeySequence(Qt.Key.Key_Backspace),
+			QKeySequence(Qt.Key.Key_PageUp),
+		])
+		action.triggered.connect(self.showPreviousFile)
+		self.addAction(action)
+
+		action = self.toolbar.addAction(QIcon.fromTheme('go-next'), 'Next')
+		action.setShortcuts([
+			QKeySequence(Qt.Key.Key_Space),
+			QKeySequence(Qt.Key.Key_PageDown),
+		])
+		action.triggered.connect(self.showNextFile)
+		self.addAction(action)
+
 		self.toolbar.addSeparator()
 
 		self.scrollview = ImageViewerCenter()
-		self.scrollview.installEventFilter(self) ### !
 		self.setCentralWidget(self.scrollview)
 
-		self.toolbar.addAction(QIcon.fromTheme('zoom-original'), 'Z 1:1').triggered.connect(self.scrollview.doNormalZoom)
-		self.toolbar.addAction(QIcon.fromTheme('zoom-fit-best'), 'Z Fit').triggered.connect(self.scrollview.doFitAllZoom)
-		self.toolbar.addAction(QIcon.fromTheme('zoom-fit-best'), 'Z FitExp').triggered.connect(self.scrollview.doFitCutZoom)
-		self.toolbar.addAction(QIcon.fromTheme('zoom-in'), 'Z In').triggered.connect(self.scrollview.zoom)
-		self.toolbar.addAction(QIcon.fromTheme('zoom-out'), 'Z Out').triggered.connect(self.scrollview.unzoom)
+		action = self.toolbar.addAction(QIcon.fromTheme('zoom-original'), 'Z 1:1')
+		action.triggered.connect(self.scrollview.doNormalZoom)
+
+		action = self.toolbar.addAction(QIcon.fromTheme('zoom-fit-best'), 'Z Fit')
+		action.triggered.connect(self.scrollview.doFitAllZoom)
+
+		action = self.toolbar.addAction(QIcon.fromTheme('zoom-fit-best'), 'Z FitExp')
+		action.triggered.connect(self.scrollview.doFitCutZoom)
+
+		action = self.toolbar.addAction(QIcon.fromTheme('zoom-in'), 'Z In')
+		action.triggered.connect(self.scrollview.zoom)
+		action.setShortcut(QKeySequence.StandardKey.ZoomIn)
+		self.addAction(action)
+
+		action = self.toolbar.addAction(QIcon.fromTheme('zoom-out'), 'Z Out')
+		action.triggered.connect(self.scrollview.unzoom)
+		action.setShortcut(QKeySequence.StandardKey.ZoomOut)
+		self.addAction(action)
 
 		self.fullscreenAction = self.toolbar.addAction(QIcon.fromTheme('view-fullscreen'), 'Fullscreen')
+		self.fullscreenAction.setShortcut(QKeySequence.StandardKey.FullScreen)
 		self.fullscreenAction.setCheckable(True)
 		self.fullscreenAction.toggled.connect(self.setFullscreen)
+		self.addAction(self.fullscreenAction)
+
 		self.toolbar.addSeparator()
 
 		self.toolbar.addAction('Copy tags').triggered.connect(self.copyPreviousTags)
@@ -81,18 +106,9 @@ class ImageViewer(QMainWindow):
 		self.scrollview.leftZoneEntered.connect(self.docktagger.show)
 		self.scrollview.leftZoneLeft.connect(self.docktagger.hide)
 
-	def eventFilter(self, sview, ev):
-		if ev.type() == QEvent.Type.KeyPress:
-			if ev.key() == Qt.Key.Key_Escape:
-				self.fullscreenAction.setChecked(False)
-				return True
-			elif ev.key() in [Qt.Key.Key_PageUp, Qt.Key.Key_Backspace]: # qactions
-				self.showPreviousFile()
-				return True
-			elif ev.key() in [Qt.Key.Key_PageDown, Qt.Key.Key_Space]:
-				self.showNextFile()
-				return True
-		return super().eventFilter(sview, ev)
+		action = self.addAction("unfullscreen")
+		action.setShortcut(QKeySequence(Qt.Key.Key_Escape))
+		action.triggered.connect(self.unFullscreen)
 
 	def spawn(self, files, currentFile):
 		self.files = files
@@ -120,11 +136,16 @@ class ImageViewer(QMainWindow):
 			self.db.tag_file(self.files[self.currentIndex], tags)
 		self.tageditor.setFile(self.files[self.currentIndex])
 
+	@Slot(bool)
 	def setFullscreen(self, full):
 		if full:
 			self.showFullScreen()
 		else:
 			self.showNormal()
+
+	@Slot()
+	def unFullscreen(self):
+		self.fullscreenAction.setChecked(False)
 
 	@Slot()
 	def showPreviousFile(self):
