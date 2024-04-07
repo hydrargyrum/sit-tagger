@@ -151,16 +151,39 @@ def xdg_config():
 	return os.getenv('XDG_CONFIG_HOME', str(Path.home() / ".config"))
 
 
+def xdg_data():
+	return os.getenv('XDG_DATA_HOME', str(Path.home() / ".local/share"))
+
+
+def choose_db_path(opts):
+	if opts.db:  # 1. --database
+		return
+
+	opts.db = os.getenv("SITTAGGER_DATABASE")  # 2. env var
+	if opts.db:
+		return
+
+	legacy_path = Path(xdg_config()) / 'sit-tagger.sqlite'
+	dest_path = Path(xdg_data()) / 'sit-tagger/files.sqlite'
+
+	for preferred in (dest_path, legacy_path):  # 3. new location or legacy
+		if preferred.exists():
+			opts.db = str(preferred)
+			return
+
+	# 4. none found: use new location
+	dest_path.parent.mkdir(mode=0o700, exist_ok=True)
+	opts.db = str(dest_path)
+
+
 def parse_options(args):
 	import argparse
-
-	default_db = os.getenv('SITTAGGER_DATABASE') or xdg_config() + '/sit-tagger.sqlite'
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-d', '--database', metavar='FILE', dest='db')
 	parser.add_argument('-p', '--path', dest='filespath')
 	parser.add_argument('target', nargs='?', default=Path.cwd(), type=Path)
-	parser.set_defaults(filespath='/', db=default_db)
+	parser.set_defaults(filespath='/')
 	opts = parser.parse_args(args)
 
 	if str(opts.target).startswith("file:/"):

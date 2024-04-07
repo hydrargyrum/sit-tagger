@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: WTFPL
 
 from argparse import ArgumentParser, RawTextHelpFormatter
+from pathlib import Path
 from textwrap import dedent
 import os
 import sys
@@ -13,11 +14,34 @@ def xdg_config():
 	return os.getenv('XDG_CONFIG_HOME', os.getenv('HOME', '/') + '/.config')
 
 
-def build_parser():
-	default_db = os.getenv('SITTAGGER_DATABASE') or xdg_config() + '/sit-tagger.sqlite'
+def xdg_data():
+	return os.getenv('XDG_DATA_HOME', str(Path.home() / ".local/share"))
 
+
+def choose_db_path(opts):
+	if opts.db:  # 1. --database
+		return
+
+	opts.db = os.getenv("SITTAGGER_DATABASE")  # 2. env var
+	if opts.db:
+		return
+
+	legacy_path = Path(xdg_config()) / 'sit-tagger.sqlite'
+	dest_path = Path(xdg_data()) / 'sit-tagger/files.sqlite'
+
+	for preferred in (dest_path, legacy_path):  # 3. new location or legacy
+		if preferred.exists():
+			opts.db = str(preferred)
+			return
+
+	# 4. none found: use new location
+	dest_path.parent.mkdir(mode=0o700, exist_ok=True)
+	opts.db = str(dest_path)
+
+
+def build_parser():
 	parser = ArgumentParser(description="Manipulate a SIT-tagger database")
-	parser.add_argument('-d', '--database', metavar='FILE', dest='db', default=default_db)
+	parser.add_argument('-d', '--database', metavar='FILE', dest='db')
 	return parser
 
 
@@ -175,6 +199,7 @@ def main():
 	sub.set_defaults(func=do_untrack_files)
 
 	args = parser.parse_args()
+	choose_db_path(args)
 
 	db = Db()
 	db.open(args.db)
