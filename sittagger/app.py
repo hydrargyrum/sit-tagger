@@ -182,13 +182,14 @@ def parse_options(args):
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-d', '--database', metavar='FILE', dest='db')
 	parser.add_argument('-p', '--path', dest='filespath')
-	parser.add_argument('target', nargs='?', default=Path.cwd(), type=Path)
+	parser.add_argument('target', nargs='?', default=os.getcwd())
 	parser.set_defaults(filespath='/')
 	opts = parser.parse_args(args)
 
-	if str(opts.target).startswith("file:/"):
-		opts.target = Path(url2pathname(urlparse(str(opts.target)).path))
-	opts.target = opts.target.absolute()
+	if opts.target.startswith("file:/"):
+		opts.target = Path(url2pathname(urlparse(opts.target).path))
+	else:
+		opts.target = Path(os.path.abspath(opts.target))
 	return opts
 
 
