@@ -3,7 +3,6 @@
 from pathlib import Path
 
 from PyQt6.QtCore import QDir, pyqtSlot as Slot, Qt, pyqtSignal as Signal, QMimeData, QCoreApplication
-from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QKeySequence, QAction, QFileSystemModel
 from PyQt6.QtWidgets import (
 	QTreeView, QInputDialog, QLineEdit,

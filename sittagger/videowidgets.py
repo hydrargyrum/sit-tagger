@@ -204,7 +204,7 @@ class VideoTagEditor(QWidget):
 
 		self.seeker = SeekSlider(self.video)
 		self.seeker.setSingleStep(1000)
-		#~ self.seeker.valueChanged.connect(self.video.seek)
+		# self.seeker.valueChanged.connect(self.video.seek)
 		self.row2.layout().addWidget(self.seeker)
 
 		self.posLabel = PositionLabel(self.video)
@@ -265,21 +265,21 @@ class VideoTagEditor(QWidget):
 		dialog.exec()
 		taglist = dialog.selectedTags()
 		self.table.item(row, 0).setText(' '.join(taglist))
-		#~ self.saveTags()
+		# self.saveTags()
 
 	@Slot()
 	def rowSetStart(self):
 		ms = self.video.position()
 		n = self.table.currentRow()
 		self.table.item(n, 1).setText('%d' % (ms / 1000))
-		#~ self.saveTags()
+		# self.saveTags()
 
 	@Slot()
 	def rowSetEnd(self):
 		ms = self.video.position()
 		n = self.table.currentRow()
 		self.table.item(n, 2).setText('%d' % (ms / 1000))
-		#~ self.saveTags()
+		# self.saveTags()
 
 	@Slot()
 	def delRow(self):
@@ -325,7 +325,6 @@ class VideoTagEditor(QWidget):
 
 	def _itemChanged(self, qitem):
 		self.saveTags()
-		pass
 
 	def _itemDClicked(self, item):
 		if item.column() != 0:

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: WTFPL
 
 from PyQt6.QtCore import (
-	Qt, QEvent, pyqtSignal as Signal, pyqtSlot as Slot, QTimer, QPointF,
+	Qt, pyqtSignal as Signal, pyqtSlot as Slot, QTimer, QPointF,
 )
 from PyQt6.QtGui import (
 	QKeySequence, QPalette, QPixmap, QMovie, QIcon, QImageReader, QCursor,
@@ -116,11 +116,11 @@ class ImageViewer(QMainWindow):
 
 		self.setFile(currentFile)
 		if self.isHidden():
-			#~ self.setWindowState(self.windowState() | Qt.WindowState.WindowMaximized)
-			#~ self.show()
+			# self.setWindowState(self.windowState() | Qt.WindowState.WindowMaximized)
+			# self.show()
 			self.fullscreenAction.setChecked(False)
 			self.fullscreenAction.setChecked(True)
-			#~ self.showMaximized()
+			# self.showMaximized()
 		else:
 			self.show()
 

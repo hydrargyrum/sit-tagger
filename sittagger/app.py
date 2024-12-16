@@ -13,7 +13,7 @@ import os
 from PyQt6.QtCore import pyqtSlot as Slot, QUrl, Qt
 from PyQt6.QtGui import QIcon, QPixmap, QDesktopServices
 from PyQt6.QtWidgets import (
-	QMainWindow, QListWidgetItem, QApplication, QAbstractItemView, QWhatsThis,
+	QMainWindow, QApplication, QAbstractItemView, QWhatsThis,
 )
 from PyQt6.uic import loadUiType
 
@@ -25,7 +25,7 @@ def load_ui_class(package, module_name, class_name):
 	try:
 		mod = import_module(f'.{module_name}_ui', package)
 	except ImportError:
-		mod = import_module(f'.', package)
+		mod = import_module('.', package)
 
 		folder = Path(mod.__path__[0])
 		path = folder.joinpath(f'{module_name}.ui')
@@ -126,7 +126,6 @@ class Win(Ui_MainWindow, QMainWindow):
 			QDesktopServices.openUrl(QUrl(Path(file).as_uri()))
 
 	def _spawnViewerItem(self):
-		files = self.imageList.getFiles()
 		self.spawnViewer(self.imageList.getFiles(), self.imageList.getCurrentFile())
 
 	@Slot()
