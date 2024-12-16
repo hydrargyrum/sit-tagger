@@ -49,6 +49,11 @@ dependencies = [
 name = "Hg"
 email = "dev@indigo.re"
 
+[tool.hatch.envs.hatch-test]
+extra-dependencies = [
+    "pytest-qt",
+]
+
 [project.scripts]
 sit-tagger-cli = "sittagger.cli:main"
 
@@ -73,3 +78,17 @@ include = [
 [tool.hatch.build.targets.wheel.shared-data]
 "sittagger.png" = "share/icons/hicolor/128x128/apps/sittagger.png"
 "sittagger.desktop" = "share/applications/sittagger.desktop"
+
+[tool.hatch.envs.hatch-static-analysis]
+config-path = "none"
+dependencies = [
+    "flake8",
+    "flake8-pyproject",
+]
+
+[tool.flake8]
+max-line-length = 120
+ignore = [
+    "W191",
+    "W503",
+]
