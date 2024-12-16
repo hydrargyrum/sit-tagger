@@ -13,7 +13,13 @@ video files will be added.
 
 ![sit-tagger window with a tags list pane (with a checkbox for each tag) and the list of files (with thumbnails) matching the checked tags](https://raw.githubusercontent.com/hydrargyrum/sit-tagger/master/docs/shot-tagview.jpg)
 
-It also comes with a command-line too to manipulate the tag database.
+It also comes with a command-line tool to manipulate the tag database.
+
+## Captions
+
+SIT-Tagger lets you write text captions for files. In addition, any `#hashtags` you write in the caption are transformed into actual file tags. This makes tagging files easier while letting you comment your files.
+
+![sit-tagger window with the list of files (with thumbnails) and a caption editor pane (showing a user-entered caption with #hashtags in it)](https://raw.githubusercontent.com/hydrargyrum/sit-tagger/master/docs/shot-caption.jpg)
 
 ## Command-line tool
 
