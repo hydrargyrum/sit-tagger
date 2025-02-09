@@ -199,6 +199,7 @@ def parse_options(args):
 	parser.set_defaults(filespath='/')
 	opts = parser.parse_args(args)
 
+	choose_db_path(opts)
 	if opts.target.startswith("file:/"):
 		opts.target = Path(url2pathname(urlparse(opts.target).path))
 	else:
